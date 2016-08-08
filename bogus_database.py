@@ -7,11 +7,13 @@ n   = 1100
 np.random.seed(2016)
  
 # Features 
-id_ = range(1,n+1)
 department = ['Finanzas','Tecnico','Ventas','Gerencia']
+cedula = range(1037611242,1037611242+n,1)
+genero = ['Mujer','Hombre']
 dep_sizes  = [5.,30.,10.,2.]
 tot = sum(dep_sizes)
 
 # Generate data frame
 dep_list = list(np.random.choice(department, n, p=np.divide(dep_sizes,tot)))
-pd.DataFrame({'department':dep_list},index=id_).to_csv('Files/bogus_db.csv')
+gen_list = list(np.random.choice(genero, n, p = [0.5,0.5]))
+pd.DataFrame({'cedula':cedula,'department':dep_list,'genero':gen_list}).to_csv('Files/bogus_db.csv')
