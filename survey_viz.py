@@ -16,7 +16,10 @@ for replies in submission:
         print 
         text = replies['answers'][questions]['text']
         answer = replies['answers'][questions]['answer']
-        dct['text']=answer
+        dct[text]=answer
+        
+
+data = pd.DataFrame([]).from_dict(dct,orient='index')
 
     #for form in forms:
     #    print form["title"]
@@ -31,5 +34,3 @@ for replies in submission:
 
 
 # 
-
-pd
