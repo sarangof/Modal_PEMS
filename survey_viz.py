@@ -6,20 +6,40 @@ myKey = '33dcf578e3523959b282e1bebff1f581'
 
 #def main():
 
-#jotformAPIClient = JotformAPIClient(myKey)
-#submission_filter = {"form_id":"62214117688154"}
-#submission = jotformAPIClient.get_submissions(filterArray=submission_filter) 
+jotformAPIClient = JotformAPIClient(myKey)
+submission_filter = {"form_id":"62214117688154"}
+submission = jotformAPIClient.get_submissions(filterArray=submission_filter) 
 
 dct = {}
+type_ = []
 for replies in submission:
     for questions in replies['answers']:
-        print 
-        text = replies['answers'][questions]['text']
-        answer = replies['answers'][questions]['answer']
-        dct[text]=answer
+        try:
+            text   = replies['answers'][questions]['text']
+            type_.append(replies['answers'][questions]['type'])
+            answer = replies['answers'][questions]['answer']
+            if text in dct.keys():
+                #print str(text.encode("utf-8"))
+                dct[text].append(answer)
+            else:
+                dct[text] = [answer]
+        except KeyError:
+            continue
         
+    
+print(set(type_))
 
-data = pd.DataFrame([]).from_dict(dct,orient='index')
+"""
+
+Types:
+
+- control_texbox
+
+"""
+
+
+#data = pd.DataFrame([]).from_dict(dct,orient='index')
+
 
     #for form in forms:
     #    print form["title"]
