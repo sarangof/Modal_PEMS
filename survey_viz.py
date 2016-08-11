@@ -13,18 +13,21 @@ submission_filter = {"form_id":"62214117688154"}
 submission = jotformAPIClient.get_submissions(filterArray=submission_filter) 
 
 dct = {}
-type_ = []
+plot_list = []
 for replies in submission:
     for questions in replies['answers']:
+        text   = replies['answers'][questions]['text']
+        tp = replies['answers'][questions]['type']
         try:
-            text   = replies['answers'][questions]['text']
-            tp = replies['answers'][questions]['type']
-            type_.append(tp)
             answer = replies['answers'][questions]['answer']
+        except KeyError:
+            answer = 'NA'
+        try:
             if tp == 'control_matrix':
-                content = pd.DataFrame([]).from_dict(answer,orient='index')
+                #content = pd.DataFrame([]).from_dict(answer,orient='index')
+                content = ''
             elif tp == 'control_fullname':
-                "-".join([answer['first'],answer['middle'],answer['last']])
+                content = " ".join([answer['first'],answer['middle'],answer['last']])
             elif tp == 'control_address':
                 content = answer['addr_line1']
             elif tp in ['control_dropdown','control_textbox','control_spinner','control_scale','control_number','control_radio']:
@@ -36,9 +39,12 @@ for replies in submission:
             elif tp == 'control_time':
                 content = datetime.strptime(answer['hourSelect']+answer['minuteSelect']+answer['ampm'],'%H%M%p')
             else:
-
                 print tp
                 content = ['something is missing.']
+                
+            print text
+            print answer                
+                
             if text in dct.keys():
                 dct[text].append(content)
             else:
@@ -57,7 +63,8 @@ Types:
 
 
 
-#data = pd.DataFrame([]).from_dict(dct,orient='index')
+data = pd.DataFrame([]).from_dict(dct)
+data = data.set_index([u'2. Número de cédula'])
 
 
     #for form in forms:
