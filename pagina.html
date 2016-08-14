@@ -11,26 +11,35 @@
 
 <body>
 
-	<h1 id="header"><p>Selección de muestra</p></h1>
+	<h1 id="header"><p>Inicio</p></h1>
     
-	<div id="cedula_input">
-        <p>
-        Ingrese lista de cédulas y empleados en la empresa  
-        </p>
-        <input type=file value="Submit">
-        <input type=submit value="Ingresar">
-        <br>
+	<div id="empresa">
+        <h2> Datos sobre la empresa </h2>
+
+        <form id='dir_empresa'>
+            <label for='cedulas_file'> Ingrese archivo de empleados la empresa</label>
+            <input type=file id='cedulas_file' value="Submit">
+            <br>
+            <label for='sede'>Sede</label>
+            <input type="text" id='sede' name="sede">
+            <br>
+            <label for='dir'>Dirección</label>
+            <input type="text" name="direccion" id='dir'>
+            <br>
+            <input type=submit value="Ingresar">
+        </form>
+        
 	</div>
     <br>
     <div>
-        <p>
-            Ingrese el número de personas a encuestar 
-        </p>
+        <h2>
+            Sobre la encuesta
+        </h2>
         
         <form id='n_muestra'>
-            Nombre:<br>
-            <input type="text" name="Número de empleados"><br>
-            <input type=submit value="Ingresar">
+            <label for='personas'>Número de personas a encuestar</label>
+            <input type=text id='personas'>
+            <input type=submit  value="Ingresar">
         </form>
         
 <!--
@@ -39,18 +48,7 @@
 -->
     </div>
     
-    <div id='direcciones'>
-        <p>
-        Ingrese el nombre y dirección de cada una de las sedes de la empresa
-        </p>
-        <form id='dir_empresa'>
-            Nombre:<br>
-            <input type="text" name="sede"><br>
-            Direccion:<br>
-            <input type="text" name="direccion">
-            <input type=submit value="Ingresar">
-        </form>
-    </div>
+
 
 </body>
 
