@@ -2,36 +2,55 @@
 <!-- Template by quackit.com -->
 <html>
 <head>
+    <link rel="stylesheet" href="style.css">
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<title>3 Column Layout</title>
-	<style type="text/css">
+	<title>PEMS-app</title>
 
-		/* Layout */
-		body {
-			min-width: 630px;
-		}
-
-
-		
-	</style>
 	
 </head>
 
 <body>
 
-	<header id="header"><p>Selección de muestra</p></header>
-
-	<div id="container">
+	<h1 id="header"><p>Selección de muestra</p></h1>
+    
+	<div id="cedula_input">
         <p>
-        Ingrese lista de cedulas y demas
+        Ingrese lista de cédulas y empleados en la empresa  
         </p>
         <input type=file value="Submit">
         <input type=submit value="Ingresar">
+        <br>
 	</div>
-
-	<div id="footer-wrapper">
-		<footer id="footer"><p></p></footer>
-	</div>
+    <br>
+    <div>
+        <p>
+            Ingrese el número de personas a encuestar 
+        </p>
+        
+        <form id='n_muestra'>
+            Nombre:<br>
+            <input type="text" name="Número de empleados"><br>
+            <input type=submit value="Ingresar">
+        </form>
+        
+<!--
+        agregar restricción
+        
+-->
+    </div>
+    
+    <div id='direcciones'>
+        <p>
+        Ingrese el nombre y dirección de cada una de las sedes de la empresa
+        </p>
+        <form id='dir_empresa'>
+            Nombre:<br>
+            <input type="text" name="sede"><br>
+            Direccion:<br>
+            <input type="text" name="direccion">
+            <input type=submit value="Ingresar">
+        </form>
+    </div>
 
 </body>
 
