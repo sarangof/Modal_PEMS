@@ -6,13 +6,19 @@ import seaborn as sns
 from jotform import JotformAPIClient
 from  datetime import datetime
 import matplotlib.pyplot as plt
+import requests
+import json
+import re
 
-# API call, import, etc
-myKey = '33dcf578e3523959b282e1bebff1f581'
-jotformAPIClient = JotformAPIClient(myKey)
+# Jotform API call, submission
+jotFormKey = '33dcf578e3523959b282e1bebff1f581'
+jotformAPIClient = JotformAPIClient(jotFormKey)
 submission_filter = {"form_id":"62214117688154"}
 submission = jotformAPIClient.get_submissions(filterArray=submission_filter) 
 
+# Google Maps API for georeferencing
+googleKey = 'AIzaSyBvuKUfCCTNzc8etkAuaU-16uzl3N4f6Vw'
+    
 # Fill out a dictionary with the right formats for each answer
 dct = {}
 plot_list = []
@@ -26,11 +32,25 @@ for replies in submission:
             answer = 'NA'
         try:
             if tp == 'control_matrix':
-                content = ''
+                #print answer
+                content = answer
             elif tp == 'control_fullname':
                 content = " ".join([answer['first'],answer['middle'],answer['last']])
             elif tp == 'control_address':
-                content = answer['addr_line1']
+                dr = answer['addr_line1']
+                direc = '+'.join(re.findall(r"[\w']+",dr))
+                munici = replies['answers']['22']['answer']
+                #add = '1600+Amphitheatre+Parkway,+Mountain+View,+CA'
+                call = 'https://maps.googleapis.com/maps/api/geocode/json?address='+direc+'+'+munici+'+'+'+Colombia'+'&key='+googleKey
+                request = requests.get(call)
+                
+                d = json.loads(request.content)
+                if d['status']=='OK':
+                    lon,lat = d['results'][0]['geometry']['location']['lng'],d['results'][0]['geometry']['location']['lat']
+                else:
+                    print('api NO')
+                    lon,lat = 'NA','NA'
+                content = (lon,lat)
             elif tp in ['control_dropdown','control_textbox','control_spinner','control_scale','control_number','control_radio']:
                 content = answer
             elif tp == 'control_datetime':
@@ -52,26 +72,44 @@ for replies in submission:
 # consolidate everything into a single data frame
 data = pd.DataFrame([]).from_dict(dct)
 data = data.set_index(u'2. Número de cédula')
+n = len(data)
 
 cnt = 1
 for cols in data.columns:
     try:
-        plt.figure()
+        #plt.figure()
         data[cols].plot(kind='bar')
         plt.title(cols)
         plt.savefig('data_viz/'+str(cnt)+'.png')
         cnt +=1 
     except TypeError:
         try: 
-            plt.figure()
+            #plt.figure()
             data[cols].value_counts().plot(kind='bar')
             plt.title(cols)
             plt.savefig('data_viz/'+str(cnt)+'.png')
             cnt +=1
         except TypeError:
-            print cols
-            continue
+            # FUCK THIS CASE.
+            try:
+                D = {}
+                for it in data[cols]:
+                    for k,v in it.iteritems():
+                        pass
+#                D = {k:v/n for k,v in D.iteritems()}
+#                plt.bar(range(len(D)), D.values(), align='center')
+#                plt.title(cols)
+#                plt.xticks(range(len(D)), D.keys())
+#                plt.savefig('data_viz/'+str(cnt)+'.png')
+                print('This case needs to be reviewed')
+            except AttributeError:
+                #print cols
+                continue
 
+
+
+
+    
 
 """
 plot_instructions = {u'10. Número de hijos':'bar', 
