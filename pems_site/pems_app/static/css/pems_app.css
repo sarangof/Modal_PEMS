@@ -14,33 +14,19 @@
     margin-left: 40px;
 }
 
-h1, h2, h3, h4 {
-    font-family: 'Lobster', cursive;
+form {
+	font-family: 'Lobster', cursive;
+	padding: 20px 20px 20px 40px;
+	transform: translate(50px, 100px);
+	color:aqua
 }
 
-.date {
-    color: #828282;
+p {
+	font-family: 'Lobster';
+	color: aqua
 }
 
-.save {
-    float: right;
-}
 
-.post-form textarea, .post-form input {
-    width: 100%;
-}
 
-.top-menu, .top-menu:hover, .top-menu:visited {
-    color: #ffffff;
-    float: right;
-    font-size: 26pt;
-    margin-right: 20px;
-}
 
-.post {
-    margin-bottom: 70px;
-}
 
-.post h1 a, .post h1 a:visited {
-    color: #000000;
-}

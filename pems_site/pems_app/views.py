@@ -1,8 +1,15 @@
 from django.shortcuts import render
-from .models import Post
-from .forms import FormForMyModel
+from .forms import FormForMyModel, FormNuevaEmpresa
 
-def create_form(request):
+def create_form_parametros(request):
 	form = FormForMyModel()
 	context_data = {'form':form}
-	return render(request,'pems_app/template.html', context_data)
+	return render(request,'pems_app/parametros_empresa.html', context_data)
+
+def create_empresa(request):
+	form = FormNuevaEmpresa()
+	context_data = {'form':form}
+	return render(request,'pems_app/cargar_empresa.html',context_data)
+
+def create_pagina_empresas(request):
+	return render(request,'pems_app/modulo_empresas.html')
