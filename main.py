@@ -9,6 +9,9 @@ from jotform import JotformAPIClient
 import pandas as pd
 from sampling import *
 
+# Check if there are new submissions at all ()
+
+
 # Check on both forms (parametros, ingresar empresa, general)
 # Guardar un log del id y el tiempo de la ultima submission
 # Si hay un par {id,tiempo} nuevo, proseguir.
@@ -23,18 +26,15 @@ var = 'A'
 jotFormKey = '33dcf578e3523959b282e1bebff1f581'
 jotformAPIClient = JotformAPIClient(jotFormKey)
 
-def return_submission():
-    submission = jotformAPIClient.get_form_submissions(FORM_1)
+def return_submission(form_option):
+    submission = jotformAPIClient.get_form_submissions(form_option)
     submission = submission[len(submission)-1] # last submission
-    subtime = submission['created_at']  
+    return submission
 
 # CASO 1
 
-if var=='A': # Se hizo un request para pedir parámetros de una nueva encuesta
-
-    submission_filter = {"id:gt":"62356528846163"}
-      
-    
+if var=='A': # Se hizo un request para pedir parámetros de una nueva encuesta    
+    submission = return_submission(FORM_1)
     try:
         url_bdd = str(submission['answers'][u'5']['answer'][0])
         nombre_empresa = str(submission['answers'][u'6']['answer'])

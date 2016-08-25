@@ -61,15 +61,15 @@ def main():
     service = discovery.build('drive', 'v3', http=http)
 
     results = service.files().list(
-        pageSize=20,fields="nextPageToken, files(id, name)").execute()
+        pageSize=50,fields="nextPageToken, files(id, name)").execute()
     items = results.get('files', [])
     if not items:
         print('No files found.')
     else:
         for item in items:
-            if item['id']=='0B3D2VjgtkabkaWdQcU9uMkhRaUk':
+            #if item['id']=='0B3D2VjgtkabkaWdQcU9uMkhRaUk':
             #print('{0} ({1})'.format(item['name'], item['id']))
-                print(item)
+            print(item)
     #res = service.files().insert('cedulas.csv',bucket='0B3D2VjgtkabkaWdQcU9uMkhRaUk')
     #if res:
     #    print('success')
