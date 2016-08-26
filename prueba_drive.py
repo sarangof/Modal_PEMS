@@ -26,7 +26,7 @@ except ImportError:
 
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/drive-python-quickstart.json
-SCOPES =  'https://www.googleapis.com/auth/drive' #'https://www.googleapis.com/auth/drive.metadata.readonly'
+SCOPES =  'https://www.googleapis.com/auth/drive' 
 CLIENT_SECRET_FILE = 'client_secret.json' 
 APPLICATION_NAME = 'Drive API Python Quickstart'
 
@@ -45,7 +45,7 @@ def get_credentials():
     if not os.path.exists(credential_dir):
         os.makedirs(credential_dir)
     credential_path = os.path.join(credential_dir,
-                                   'drive-python-quickstart.json')
+                                   'creds.json')
 
     store = oauth2client.file.Storage(credential_path)
     credentials = store.get()
@@ -93,23 +93,40 @@ def insert_file(service, title, description, parent_id, mime_type, filename):
           print(reason)
   return None
 
+
+def insert_folder(parent_id,folder_name):
+    service = discovery.build('drive', 'v3', http=http)
+    folder_id = parent_id
+    file_metadata = {
+      'name' : folder_name,
+      'mimeType' : 'application/vnd.google-apps.folder',
+      'parents': [ folder_id ]
+    }
+    file = service.files().create(body=file_metadata,
+                                        fields='id').execute()
+    print('Folder ID: %s' % file.get('id'))
+    # Manage error
+
 credentials = get_credentials()
 http = credentials.authorize(httplib2.Http())
-service = discovery.build('drive', 'v2', http=http)
 
-title = 'pachito'
-description = 'pachito es bonito'
-parent_id = '0Bz78HNrCokDoc3RQTWYyWk94RG8' # '0B3D2VjgtkabkaWdQcU9uMkhRaUk' 
+"""
+Usage for insert_file
+"""
+
+service = discovery.build('drive', 'v2', http=http)
+title = 'cedulas'
+description = 'Cedulas'
+parent_id = '0B3D2VjgtkabkaWdQcU9uMkhRaUk' # '0Bz78HNrCokDoc3RQTWYyWk94RG8'
 mime_type = ''
 filename = 'cedulas.csv'
 
-#perms = service.permissions().list(fileId=parent_id).execute()
-#
-#for perm in perms['items']:
-#    try:
-#        print(perm['name'])
-#        print(perm['role'])
-#    except KeyError:
-#        print(perm)
 
 error = insert_file(service, title, description, parent_id, mime_type, filename)
+
+"""
+Usage for insert_folder
+"""
+
+folder_name = 'Empresa_test'
+error = insert_folder(parent_id,folder_name)
