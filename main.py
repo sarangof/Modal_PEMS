@@ -85,6 +85,7 @@ if new_submission:
         survey_submission = jotformAPIClient.get_form_submissions('62214117688154')
         data = create_db(survey_submission,name=nombre_empresa) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa
         vis_answers(data,name=nombre_empresa) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa/visualizaciones
+        generar_grupos()            
     
     # CASO 3
     if new_form_3:
