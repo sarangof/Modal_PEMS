@@ -3,7 +3,6 @@
 from __future__ import print_function
 import httplib2
 import os
-
 from apiclient import discovery
 import oauth2client
 from oauth2client import client
@@ -53,32 +52,24 @@ def get_credentials():
         print('Storing credentials to ' + credential_path)
     return credentials
 
-#def main():
-#    """Shows basic usage of the Google Drive API.
-#
-#    Creates a Google Drive API service object and outputs the names and IDs
-#    for up to 10 files.
-#    """
-#    credentials = get_credentials()
-#    http = credentials.authorize(httplib2.Http())
-#    service = discovery.build('drive', 'v3', http=http)
-#
-#    results = service.files().list(
-#        pageSize=50,fields="nextPageToken, files(id, name)").execute()
-#    items = results.get('files', [])
-#    if not items:
-#        print('No files found.')
-#    else:
-#        for item in items:
-#            #if item['id']=='0B3D2VjgtkabkaWdQcU9uMkhRaUk':
-#            #print('{0} ({1})'.format(item['name'], item['id']))
-#            print(item)
-#    #res = service.files().insert('cedulas.csv',bucket='0B3D2VjgtkabkaWdQcU9uMkhRaUk')
-#    #if res:
-#    #    print('success')
-#    
-#if __name__ == '__main__':
-#    main()  
+def main():
+    credentials = get_credentials()
+    http = credentials.authorize(httplib2.Http())
+    service = discovery.build('drive', 'v3', http=http)
+
+    results = service.files().list(
+        pageSize=50,fields="nextPageToken, files(id, name)").execute()
+    items = results.get('files', [])
+    if not items:
+        print('No files found.')
+    else:
+        for item in items:
+            if item['id']=='0B3D2VjgtkabkaWdQcU9uMkhRaUk':
+            #print('{0} ({1})'.format(item['name'], item['id']))
+                print(item)
+    
+if __name__ == '__main__':
+    main()  
 
 def insert_file(service, title, description, parent_id, mime_type, filename):
   """Insert new file.
@@ -131,6 +122,10 @@ parent_id = '0Bz78HNrCokDoc3RQTWYyWk94RG8' # '0B3D2VjgtkabkaWdQcU9uMkhRaUk'
 mime_type = ''
 filename = 'cedulas.csv'
 
+
+# IDEA HACERLO CON MI USUARIO DE GOOGLE
+
+
 perms = service.permissions().list(fileId=parent_id).execute()
 
 for perm in perms['items']:
@@ -144,7 +139,7 @@ for perm in perms['items']:
 error = insert_file(service, title, description, parent_id, mime_type, filename)
 
 
-from apiclient import errors
+
 
 def update_permission(service, file_id, permission_id, new_role):
   """Update a permission's role.
@@ -171,7 +166,7 @@ def update_permission(service, file_id, permission_id, new_role):
 
 new_role = 'writer'
 file_id = parent_id
-permission_id = 'anyone'
+permission_id = 'anyoneWithLink'
 update_permission(service,file_id,permission_id,new_role)
 #
 #

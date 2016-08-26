@@ -13,7 +13,7 @@ import re
 # Google Maps API for georeferencing
 googleKey = 'AIzaSyBvuKUfCCTNzc8etkAuaU-16uzl3N4f6Vw'
 
-def create_db(submission):
+def create_db(submission,name):
     
     # Fill out a dictionary with the right formats for each answer
     dct = {}
