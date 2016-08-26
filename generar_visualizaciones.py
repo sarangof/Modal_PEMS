@@ -5,7 +5,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-def vis_answers(data,name=nombre_empresa):
+def vis_answers(data,name):
     n = len(data)
     cnt = 1
     for cols in data.columns:

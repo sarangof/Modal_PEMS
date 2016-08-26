@@ -6,6 +6,7 @@ import seaborn as sns
 from jotform import JotformAPIClient
 from  datetime import datetime
 import matplotlib.pyplot as plt
+from drive_functions import insert_folder,insert_file
 import requests
 import json
 import re
@@ -17,7 +18,7 @@ def create_db(submission,name):
     
     # Fill out a dictionary with the right formats for each answer
     dct = {}
-    plot_list = []
+    #plot_list = []
     for replies in submission:
         for questions in replies['answers']:
             text   = replies['answers'][questions]['text']
@@ -68,6 +69,10 @@ def create_db(submission,name):
     # consolidate everything into a single data frame
     data = pd.DataFrame([]).from_dict(dct)
     data = data.set_index(u'2. Número de cédula')
+    data.to_csv('Files/'+str(name)+'.csv')
+    parent_id = '0B3D2VjgtkabkaWdQcU9uMkhRaUk'
+    insert_folder(name,parent_id)
+    
     return data
 
 

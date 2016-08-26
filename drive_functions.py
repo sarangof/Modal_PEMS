@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
 Created on Thu Aug 25 17:43:54 2016
@@ -5,31 +6,23 @@ Created on Thu Aug 25 17:43:54 2016
 @author: saf537
 """
 
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 from __future__ import print_function
 import httplib2
 import os
-from apiclient import discovery
+import json
 import oauth2client
+from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
 from apiclient import errors
 from apiclient.http import MediaFileUpload
-import json
+
 
 try:
     import argparse
     flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
 except ImportError:
     flags = None
-
-# If modifying these scopes, delete your previously saved credentials
-# at ~/.credentials/drive-python-quickstart.json
-SCOPES =  'https://www.googleapis.com/auth/drive' 
-CLIENT_SECRET_FILE = 'client_secret.json' 
-APPLICATION_NAME = 'Drive API Python Quickstart'
-
 
 def get_credentials():
     """Gets valid user credentials from storage.
@@ -46,7 +39,8 @@ def get_credentials():
         os.makedirs(credential_dir)
     credential_path = os.path.join(credential_dir,
                                    'creds.json')
-
+    # If modifying these scopes, delete your previously saved credentials
+    # at ~/.credentials/drive-python-quickstart.json   
     store = oauth2client.file.Storage(credential_path)
     credentials = store.get()
     if not credentials or credentials.invalid:
@@ -59,11 +53,10 @@ def get_credentials():
         print('Storing credentials to ' + credential_path)
     return credentials
 
-def insert_file(service, title, description, parent_id, mime_type, filename):
+def insert_file(title, description, parent_id, mime_type, filename):
   """Insert new file.
 
   Args:
-    service: Drive API service instance.
     title: Title of the file to insert, including the extension.
     description: Description of the file to insert.
     parent_id: Parent folder's ID.
@@ -72,6 +65,10 @@ def insert_file(service, title, description, parent_id, mime_type, filename):
   Returns:
     Inserted file metadata if successful, None otherwise.
   """
+
+  credentials = get_credentials()
+  http = credentials.authorize(httplib2.Http())
+  service = discovery.build('drive', 'v2', http=http)
   media_body = MediaFileUpload(filename, mimetype=mime_type, resumable=True)
   body = {
     'title': title,
@@ -95,6 +92,8 @@ def insert_file(service, title, description, parent_id, mime_type, filename):
 
 
 def insert_folder(parent_id,folder_name):
+    credentials = get_credentials()
+    http = credentials.authorize(httplib2.Http())
     service = discovery.build('drive', 'v3', http=http)
     folder_id = parent_id
     file_metadata = {
@@ -102,31 +101,13 @@ def insert_folder(parent_id,folder_name):
       'mimeType' : 'application/vnd.google-apps.folder',
       'parents': [ folder_id ]
     }
-    file = service.files().create(body=file_metadata,
+    created_folder = service.files().create(body=file_metadata,
                                         fields='id').execute()
-    print('Folder ID: %s' % file.get('id'))
+    return str(created_folder['id'])
     # Manage error
 
-credentials = get_credentials()
-http = credentials.authorize(httplib2.Http())
-
-"""
-Usage for insert_file
-"""
-
-service = discovery.build('drive', 'v2', http=http)
-title = 'cedulas'
-description = 'Cedulas'
-parent_id = '0B3D2VjgtkabkaWdQcU9uMkhRaUk' # '0Bz78HNrCokDoc3RQTWYyWk94RG8'
-mime_type = ''
-filename = 'cedulas.csv'
+#SCOPES =  'https://www.googleapis.com/auth/drive' 
+#CLIENT_SECRET_FILE = 'client_secret.json' 
+#APPLICATION_NAME = 'Drive API Python Quickstart'
 
 
-error = insert_file(service, title, description, parent_id, mime_type, filename)
-
-"""
-Usage for insert_folder
-"""
-
-folder_name = 'Empresa_test'
-error = insert_folder(parent_id,folder_name)

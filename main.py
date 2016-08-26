@@ -10,6 +10,8 @@ import pandas as pd
 import filecmp
 from shutil import copyfile
 from sampling import *
+from generar_bdd import *
+from generar_visualizaciones import *
 
 # Check if there are new submissions at all ()
 
@@ -58,13 +60,15 @@ def update_submissions():
 new_submission,new_form_1,new_form_2,new_form_3  = update_submissions()
 
 def return_submission(form_option):
-    submission = jotformAPIClient.get_form_submissions(form_option)[len(submission)-1] # last submission
+    submission = jotformAPIClient.get_form_submissions(form_option)
+    submission = submission[len(submission)-1] # last submission
     return submission
 
 if new_submission:
+    
     # CASO 1   
     if new_form_1: # Se hizo un request para pedir parámetros de una nueva encuesta    
-        submission,nombre_empresa = return_submission(FORM_1)
+        submission = return_submission(FORM_1)
         try:
             url_bdd = str(submission['answers'][u'5']['answer'][0])
             nombre_empresa = str(submission['answers'][u'6']['answer'])
@@ -75,13 +79,16 @@ if new_submission:
         
     # CASO 2
     if new_form_2:
+        # FIX PREREQUISITES.
         submission = return_submission(FORM_2)
-        nombre_empresa = 'Pachito'
-        data = create_db(submission,name=nombre_empresa) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa
+        nombre_empresa = 'Pachito' # FIX THIS
+        survey_submission = jotformAPIClient.get_form_submissions('62214117688154')
+        data = create_db(survey_submission,name=nombre_empresa) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa
         vis_answers(data,name=nombre_empresa) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa/visualizaciones
     
     # CASO 3
     if new_form_3:
+        pass
     
 
 # Nueva empresa()
