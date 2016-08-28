@@ -6,7 +6,7 @@ import seaborn as sns
 from jotform import JotformAPIClient
 from  datetime import datetime
 import matplotlib.pyplot as plt
-from drive_functions import insert_folder,insert_file
+from drive_functions import insert_folder,insert_file,check_duplicate_files
 import requests
 import json
 import re
@@ -71,8 +71,8 @@ def create_db(submission,name):
     data = data.set_index(u'2. Número de cédula')
     data.to_csv('Files/'+str(name)+'.csv')
     parent_id = '0B3D2VjgtkabkaWdQcU9uMkhRaUk'
-    insert_folder(name,parent_id)
-    
+    duplicate, p_id = check_duplicate_files(name)
+    insert_file(name,parent_id)
     return data
 
 

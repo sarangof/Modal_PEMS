@@ -5,7 +5,6 @@ Created on Thu Aug 25 17:43:54 2016
 
 @author: saf537
 """
-
 from __future__ import print_function
 import httplib2
 import os
@@ -17,14 +16,7 @@ from oauth2client import tools
 from apiclient import errors
 from apiclient.http import MediaFileUpload
 
-
-try:
-    import argparse
-    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
-except ImportError:
-    flags = None
-
-def get_credentials():
+def get_service(version):
     """Gets valid user credentials from storage.
 
     If nothing has been stored, or if the stored credentials are invalid,
@@ -33,6 +25,11 @@ def get_credentials():
     Returns:
         Credentials, the obtained credential.
     """
+    try:
+        import argparse
+        flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
+    except ImportError:
+        flags = None
     home_dir = os.path.expanduser('~')
     credential_dir = os.path.join(home_dir, '.credentials')
     if not os.path.exists(credential_dir):
@@ -44,6 +41,9 @@ def get_credentials():
     store = oauth2client.file.Storage(credential_path)
     credentials = store.get()
     if not credentials or credentials.invalid:
+        SCOPES =  'https://www.googleapis.com/auth/drive' 
+        CLIENT_SECRET_FILE = 'client_secret.json' 
+        APPLICATION_NAME = 'Drive API Python Quickstart'
         flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
         flow.user_agent = APPLICATION_NAME
         if flags:
@@ -51,7 +51,9 @@ def get_credentials():
         else: # Needed only for compatibility with Python 2.6
             credentials = tools.run(flow, store)
         print('Storing credentials to ' + credential_path)
-    return credentials
+    http = credentials.authorize(httplib2.Http())
+    service = discovery.build('drive', version, http=http)
+    return service
 
 def insert_file(title, description, parent_id, mime_type, filename):
   """Insert new file.
@@ -65,10 +67,7 @@ def insert_file(title, description, parent_id, mime_type, filename):
   Returns:
     Inserted file metadata if successful, None otherwise.
   """
-
-  credentials = get_credentials()
-  http = credentials.authorize(httplib2.Http())
-  service = discovery.build('drive', 'v2', http=http)
+  service = get_service('v2')
   media_body = MediaFileUpload(filename, mimetype=mime_type, resumable=True)
   body = {
     'title': title,
@@ -90,11 +89,8 @@ def insert_file(title, description, parent_id, mime_type, filename):
           print(reason)
   return None
 
-
 def insert_folder(parent_id,folder_name):
-    credentials = get_credentials()
-    http = credentials.authorize(httplib2.Http())
-    service = discovery.build('drive', 'v3', http=http)
+    service = get_service('v3')
     folder_id = parent_id
     file_metadata = {
       'name' : folder_name,
@@ -105,9 +101,21 @@ def insert_folder(parent_id,folder_name):
                                         fields='id').execute()
     return str(created_folder['id'])
     # Manage error
-
-#SCOPES =  'https://www.googleapis.com/auth/drive' 
-#CLIENT_SECRET_FILE = 'client_secret.json' 
-#APPLICATION_NAME = 'Drive API Python Quickstart'
-
-
+    
+def check_duplicate_files(file_name):
+    duplicate = False
+    service = get_service('v2')
+    for files in service.files().list().execute()['items']:
+        if files['title'].encode('utf-8') == file_name.encode('utf-8'):
+            duplicate=True
+            break
+    return duplicate
+    
+def find_parent_id(file_name):
+    folder_id = ''
+    service = get_service('v2')
+    for files in service.files().list().execute()['items']:
+        if files['title'].encode('utf-8') == file_name.encode('utf-8'):
+            folder_id = files['id']
+            break
+    return folder_id

@@ -32,6 +32,9 @@ jotformAPIClient = JotformAPIClient(jotFormKey)
 
 
 def update_submissions():
+    """
+    Creates a temporal file to compare with the submissions.
+    """
     n = 1
     bool_dict = {}
     for form_op in form_list:
@@ -80,6 +83,8 @@ if new_submission:
     # CASO 2
     if new_form_2:
         # FIX PREREQUISITES.
+        # MATCH WITH PREVIOUS DATA BASE
+        # Encuesta 1 id 62398395635167
         submission = return_submission(FORM_2)
         nombre_empresa = 'Pachito' # FIX THIS
         survey_submission = jotformAPIClient.get_form_submissions('62214117688154')
