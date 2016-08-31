@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/home/saf537/anaconda2/lib/python2.7/
 # -*- coding: utf-8 -*-
 
 import pandas as pd
@@ -6,7 +6,7 @@ import seaborn as sns
 from jotform import JotformAPIClient
 from  datetime import datetime
 import matplotlib.pyplot as plt
-from drive_functions import insert_folder,insert_file,check_duplicate_files
+from drive_functions import insert_folder,insert_file,check_duplicate_files, find_parent_id
 import requests
 import json
 import re
@@ -68,11 +68,25 @@ def create_db(submission,name):
             
     # consolidate everything into a single data frame
     data = pd.DataFrame([]).from_dict(dct)
-    data = data.set_index(u'2. Número de cédula')
-    data.to_csv('Files/'+str(name)+'.csv')
+    data = data.set_index(u'2. Número de cédula') #.encode('utf-8')
+    filename = str(name)+'.csv'
+    data.to_csv('Files/'+filename)
     parent_id = '0B3D2VjgtkabkaWdQcU9uMkhRaUk'
-    duplicate, p_id = check_duplicate_files(name)
-    insert_file(name,parent_id)
+    title = 'Files/'+filename
+    description = 'BDD '+str(name)+'.'
+    mime_type = ''    
+    
+    
+    # si no hay carpeta, paila!
+    if check_duplicate_files(name)==False:
+        with open('Files/'+filename, "w") as text_file:
+            folder_id = parent_id
+            text_file.write('No hay muestra generada para esta empresa')
+            insert_file(title, description, folder_id, mime_type, 'Files/'+filename)   
+    # Insert file to Drive
+    else: 
+        folder_id = find_parent_id(name)
+        insert_file(title, description, folder_id, mime_type, 'Files/'+filename)   
     return data
 
 
