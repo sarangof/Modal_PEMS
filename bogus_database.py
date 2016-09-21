@@ -7,7 +7,7 @@ n   = 1100
 np.random.seed(2016)
  
 # Features 
-department = ['Finanzas','Tecnico','Ventas','Gerencia']
+department = ['Finanzas','Tecnico']
 cedula = range(1037611242,1037611242+n,1)
 genero = ['Mujer','Hombre']
 dep_sizes  = [5.,30.,10.,2.]

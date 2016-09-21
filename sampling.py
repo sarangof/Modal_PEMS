@@ -8,15 +8,15 @@ import numpy  as np
 from sklearn.cross_validation import train_test_split
 from drive_functions import insert_file, check_duplicate_files, insert_folder, find_parent_id
 
-def generar_muestra(url_bdd,nombre):
+def generar_muestra(url_bdd,nombre,n_sample):
     """
     Generar documento de muestra en carpeta de Drive con el nombre de la empresa.
     """    
     bdd_empresa = pd.read_csv(url_bdd) # Leer formulario de todos los empleados
-    n_sample = len(bdd_empresa)
     
     nombre = '-'.join(re.findall(r"[\w']+",str(nombre)))
     filename = 'cedulas-'+nombre+'.csv' 
+    print(len(bdd_empresa))
     try:     
         pop,sample = train_test_split(np.array(bdd_empresa.cedula),test_size=n_sample,stratify=np.array(bdd_empresa.department))
         sample.tofile('Files/'+filename,sep=',')

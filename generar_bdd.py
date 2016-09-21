@@ -15,82 +15,79 @@ import re
 googleKey = 'AIzaSyBvuKUfCCTNzc8etkAuaU-16uzl3N4f6Vw'
 
 def create_db(submission,name):
-    
-    # Fill out a dictionary with the right formats for each answer
-    dct = {}
-    #plot_list = []
-    for replies in submission:
-        for questions in replies['answers']:
-            text   = replies['answers'][questions]['text']
-            tp = replies['answers'][questions]['type']
-            try:
-                answer = replies['answers'][questions]['answer']
-            except KeyError:
-                answer = 'NA'
-            try:
-                if tp == 'control_matrix':
-                    #print answer
-                    content = answer
-                elif tp == 'control_fullname':
-                    content = " ".join([answer['first'],answer['middle'],answer['last']])
-                elif tp == 'control_address':
-                    dr = answer['addr_line1']
-                    direc = '+'.join(re.findall(r"[\w']+",dr))
-                    munici = replies['answers']['22']['answer']
-                    #add = '1600+Amphitheatre+Parkway,+Mountain+View,+CA'
-                    call = 'https://maps.googleapis.com/maps/api/geocode/json?address='+direc+'+'+munici+'+'+'+Colombia'+'&key='+googleKey
-                    request = requests.get(call)
-                    
-                    d = json.loads(request.content)
-                    if d['status']=='OK':
-                        lon,lat = d['results'][0]['geometry']['location']['lng'],d['results'][0]['geometry']['location']['lat']
+    nombre_csv = 'cedulas-'+name+'.csv'
+    if check_duplicate_files(nombre_csv)==True:
+        # Fill out a dictionary with the right formats for each answer
+        dct = {}
+        #plot_list = []
+        for replies in submission:
+            for questions in replies['answers']:
+                text   = replies['answers'][questions]['text']
+                tp = replies['answers'][questions]['type']
+                try:
+                    answer = replies['answers'][questions]['answer']
+                except KeyError:
+                    answer = 'NA'
+                try:
+                    if tp == 'control_matrix':
+                        #print answer
+                        content = answer
+                    elif tp == 'control_fullname':
+                        content = " ".join([answer['first'],answer['middle'],answer['last']])
+                    elif tp == 'control_address':
+                        dr = answer['addr_line1']
+                        direc = '+'.join(re.findall(r"[\w']+",dr))
+                        munici = replies['answers']['22']['answer']
+                        #add = '1600+Amphitheatre+Parkway,+Mountain+View,+CA'
+                        call = 'https://maps.googleapis.com/maps/api/geocode/json?address='+direc+'+'+munici+'+'+'+Colombia'+'&key='+googleKey
+                        request = requests.get(call)
+                        
+                        d = json.loads(request.content)
+                        if d['status']=='OK':
+                            lon,lat = d['results'][0]['geometry']['location']['lng'],d['results'][0]['geometry']['location']['lat']
+                        else:
+                            print('api NO')
+                            lon,lat = 'NA','NA'
+                        content = (lon,lat)
+                    elif tp in ['control_dropdown','control_textbox','control_spinner','control_scale','control_number','control_radio']:
+                        content = answer
+                    elif tp == 'control_datetime':
+                        b = datetime.strptime(answer['day']+answer['month']+answer['year'],'%d%M%Y')
+                        a = datetime.now()
+                        content = (a-b).days/365
+                    elif tp == 'control_time':
+                        content = datetime.strptime(answer['hourSelect']+answer['minuteSelect']+answer['ampm'],'%H%M%p')
                     else:
-                        print('api NO')
-                        lon,lat = 'NA','NA'
-                    content = (lon,lat)
-                elif tp in ['control_dropdown','control_textbox','control_spinner','control_scale','control_number','control_radio']:
-                    content = answer
-                elif tp == 'control_datetime':
-                    b = datetime.strptime(answer['day']+answer['month']+answer['year'],'%d%M%Y')
-                    a = datetime.now()
-                    content = (a-b).days/365
-                elif tp == 'control_time':
-                    content = datetime.strptime(answer['hourSelect']+answer['minuteSelect']+answer['ampm'],'%H%M%p')
-                else:
-                    #print tp
-                    content = ['something is missing.']           
-                if text in dct.keys():
-                    dct[text].append(content)
-                else:
-                    dct[text] = [content]
-            except KeyError:
-                continue
-            
-    # consolidate everything into a single data frame
-    data = pd.DataFrame([]).from_dict(dct)
-    data = data.set_index(u'2. Número de cédula') #.encode('utf-8')
-    filename = str(name)+'.csv'
-    data.to_csv('Files/'+filename)
-    parent_id = '0B3D2VjgtkabkaWdQcU9uMkhRaUk'
-    title = 'Files/'+filename
-    description = 'BDD '+str(name)+'.'
-    mime_type = ''    
-    
-    
-    # si no hay carpeta, paila!
-    if check_duplicate_files(name)==False:
-        with open('Files/'+filename, "w") as text_file:
+                        #print tp
+                        content = ['something is missing.']           
+                    if text in dct.keys():
+                        dct[text].append(content)
+                    else:
+                        dct[text] = [content]
+                except KeyError:
+                    continue
+                
+        # consolidate everything into a single data frame
+        data = pd.DataFrame([]).from_dict(dct)
+        data = data.set_index(u'2. Número de cédula') #.encode('utf-8')
+        filename = str(name)+'.csv'
+        data.to_csv(filename)
+        parent_id = '0B3D2VjgtkabkaWdQcU9uMkhRaUk'
+        title = filename
+        description = 'BDD '+str(name)+'.'
+        mime_type = ''
+        
+        # Insert file to Drive        
+        folder_id = find_parent_id(name)
+        insert_file(title, description, folder_id, mime_type, filename)   
+        
+        return data
+        
+    else:
+        with open(filename, "w") as text_file:
             folder_id = parent_id
             text_file.write('No hay muestra generada para esta empresa')
-            insert_file(title, description, folder_id, mime_type, 'Files/'+filename)   
-    # Insert file to Drive
-    else: 
-        folder_id = find_parent_id(name)
-        insert_file(title, description, folder_id, mime_type, 'Files/'+filename)   
-    return data
-
-
-
+            insert_file(title, description, folder_id, mime_type, 'Files/'+filename) 
 
     
 
