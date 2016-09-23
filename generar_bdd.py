@@ -6,7 +6,7 @@ import seaborn as sns
 from jotform import JotformAPIClient
 from  datetime import datetime
 import matplotlib.pyplot as plt
-from drive_functions import insert_folder,insert_file,check_duplicate_files, find_parent_id
+from drive_functions import insert_folder,insert_file,check_duplicate_files, find_parent_id, load_file
 import requests
 import json
 import re
@@ -14,58 +14,60 @@ import re
 # Google Maps API for georeferencing
 googleKey = 'AIzaSyBvuKUfCCTNzc8etkAuaU-16uzl3N4f6Vw'
 
-def create_db(submission,name):
+def create_db(submission,short_submission,sample_id,name):
+    sample_list = load_file(sample_id)
     nombre_csv = 'cedulas-'+name+'.csv'
     if check_duplicate_files(nombre_csv)==True:
         # Fill out a dictionary with the right formats for each answer
         dct = {}
         #plot_list = []
         for replies in submission:
-            for questions in replies['answers']:
-                text   = replies['answers'][questions]['text']
-                tp = replies['answers'][questions]['type']
-                try:
-                    answer = replies['answers'][questions]['answer']
-                except KeyError:
-                    answer = 'NA'
-                try:
-                    if tp == 'control_matrix':
-                        #print answer
-                        content = answer
-                    elif tp == 'control_fullname':
-                        content = " ".join([answer['first'],answer['middle'],answer['last']])
-                    elif tp == 'control_address':
-                        dr = answer['addr_line1']
-                        direc = '+'.join(re.findall(r"[\w']+",dr))
-                        munici = replies['answers']['22']['answer']
-                        #add = '1600+Amphitheatre+Parkway,+Mountain+View,+CA'
-                        call = 'https://maps.googleapis.com/maps/api/geocode/json?address='+direc+'+'+munici+'+'+'+Colombia'+'&key='+googleKey
-                        request = requests.get(call)
-                        
-                        d = json.loads(request.content)
-                        if d['status']=='OK':
-                            lon,lat = d['results'][0]['geometry']['location']['lng'],d['results'][0]['geometry']['location']['lat']
+            if replies['answers'][u'8']['answer'] in list:
+                for questions in replies['answers']:
+                    text   = replies['answers'][questions]['text']
+                    tp = replies['answers'][questions]['type']
+                    try:
+                        answer = replies['answers'][questions]['answer']
+                    except KeyError:
+                        answer = 'NA'
+                    try:
+                        if tp == 'control_matrix':
+                            #print answer
+                            content = answer
+                        elif tp == 'control_fullname':
+                            content = " ".join([answer['first'],answer['middle'],answer['last']])
+                        elif tp == 'control_address':
+                            dr = answer['addr_line1']
+                            direc = '+'.join(re.findall(r"[\w']+",dr))
+                            munici = replies['answers']['22']['answer']
+                            #add = '1600+Amphitheatre+Parkway,+Mountain+View,+CA'
+                            call = 'https://maps.googleapis.com/maps/api/geocode/json?address='+direc+'+'+munici+'+'+'+Colombia'+'&key='+googleKey
+                            request = requests.get(call)
+                            
+                            d = json.loads(request.content)
+                            if d['status']=='OK':
+                                lon,lat = d['results'][0]['geometry']['location']['lng'],d['results'][0]['geometry']['location']['lat']
+                            else:
+                                print('api NO')
+                                lon,lat = 'NA','NA'
+                            content = (lon,lat)
+                        elif tp in ['control_dropdown','control_textbox','control_spinner','control_scale','control_number','control_radio']:
+                            content = answer
+                        elif tp == 'control_datetime':
+                            b = datetime.strptime(answer['day']+answer['month']+answer['year'],'%d%M%Y')
+                            a = datetime.now()
+                            content = (a-b).days/365
+                        elif tp == 'control_time':
+                            content = datetime.strptime(answer['hourSelect']+answer['minuteSelect']+answer['ampm'],'%H%M%p')
                         else:
-                            print('api NO')
-                            lon,lat = 'NA','NA'
-                        content = (lon,lat)
-                    elif tp in ['control_dropdown','control_textbox','control_spinner','control_scale','control_number','control_radio']:
-                        content = answer
-                    elif tp == 'control_datetime':
-                        b = datetime.strptime(answer['day']+answer['month']+answer['year'],'%d%M%Y')
-                        a = datetime.now()
-                        content = (a-b).days/365
-                    elif tp == 'control_time':
-                        content = datetime.strptime(answer['hourSelect']+answer['minuteSelect']+answer['ampm'],'%H%M%p')
-                    else:
-                        #print tp
-                        content = ['something is missing.']           
-                    if text in dct.keys():
-                        dct[text].append(content)
-                    else:
-                        dct[text] = [content]
-                except KeyError:
-                    continue
+                            #print tp
+                            content = ['something is missing.']           
+                        if text in dct.keys():
+                            dct[text].append(content)
+                        else:
+                            dct[text] = [content]
+                    except KeyError:
+                        continue
                 
         # consolidate everything into a single data frame
         data = pd.DataFrame([]).from_dict(dct)
@@ -75,11 +77,10 @@ def create_db(submission,name):
         parent_id = '0B3D2VjgtkabkaWdQcU9uMkhRaUk'
         title = filename
         description = 'BDD '+str(name)+'.'
-        mime_type = ''
         
         # Insert file to Drive        
         folder_id = find_parent_id(name)
-        insert_file(title, description, folder_id, mime_type, filename)   
+        insert_file(title, description, folder_id, filename)   
         
         return data
         

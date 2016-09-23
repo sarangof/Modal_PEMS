@@ -28,10 +28,11 @@ def generar_muestra(url_bdd,nombre,n_sample):
     parent_id = '0B3D2VjgtkabkSVh4d0I2RzZ0LWc' # '0Bz78HNrCokDoc3RQTWYyWk94RG8'
     title = filename
     description = 'Cedulas a encuestar en empresa '+str(nombre)+'.'
-    mime_type = ''
     if check_duplicate_files(nombre)==False:
         folder_id = insert_folder(parent_id,nombre)    
-        insert_file(title, description, folder_id, mime_type, 'Files/'+filename) 
+        sample_id = insert_file(title, description, folder_id, 'Files/'+filename) 
     else:
         folder_id = find_parent_id(nombre)
-        insert_file(title, description, folder_id, mime_type, 'Files/'+filename)   
+        sample_id = insert_file(title, description, folder_id,  'Files/'+filename)   
+        
+    return sample_id

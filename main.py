@@ -87,8 +87,7 @@ if new_submission:
             url_bdd        = str(submission[0]['answers'][u'5']['answer'][0])
             nombre_empresa = str(submission[0]['answers'][u'6']['answer'])
             n_sample       = int(submission[0]['answers'][u'7']['answer'])
-        print(n_sample)
-        generar_muestra(url_bdd,nombre_empresa,n_sample) #sample goes to Drive/Resultados/Muestras de empresas
+        sample_id = generar_muestra(url_bdd,nombre_empresa,n_sample) #sample goes to Drive/Resultados/Muestras de empresas
         
     """
     Second request form:
@@ -96,18 +95,13 @@ if new_submission:
     """
     if new_form_2:
         # FIX PREREQUISITES.
-        # MATCH WITH PREVIOUS DATA BASE
-        # Encuesta 1 id 62398395635167
-    
-        # Should not load previous list of IDs. With the name it should be possible to check
-        # on the last submissions        
         
         submission = return_submission(FORM_2)
         nombre_empresa = '-'.join(re.findall(r"[\w']+",str(submission['answers']['12']['answer'])))   
         long_survey_submission  = jotformAPIClient.get_form_submissions('62214117688154')
         short_survey_submission = jotformAPIClient.get_form_submissions('62646480094157')  # change survey ID
         # Generar para largo y para corto
-        data = create_db(long_survey_submission,name=nombre_empresa) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa
+        data = create_db(long_survey_submission,short_survey_submission,sample_id,name=nombre_empresa) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa
         # Import short survey submission
         vis_answers(data,name=nombre_empresa) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa/visualizaciones
         

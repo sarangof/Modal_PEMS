@@ -55,7 +55,7 @@ def get_service(version):
     service = discovery.build('drive', version, http=http)
     return service
 
-def insert_file(title, description, parent_id, mime_type, filename):
+def insert_file(title, description, parent_id, filename):
   """Insert new file.
 
   Args:
@@ -68,11 +68,11 @@ def insert_file(title, description, parent_id, mime_type, filename):
     Inserted file metadata if successful, None otherwise.
   """
   service = get_service('v2')
-  media_body = MediaFileUpload(filename, mimetype=mime_type, resumable=True)
+  media_body = MediaFileUpload(filename, mimetype='text/csv', resumable=True)
   body = {
     'title': title,
     'description': description,
-    'mimeType': mime_type
+    'mimeType': 'text/csv'
   }
   # Set the parent folder.
   if parent_id:
@@ -82,12 +82,13 @@ def insert_file(title, description, parent_id, mime_type, filename):
     file = service.files().insert(
         body=body,
         media_body=media_body).execute()
-    return file
+    return str(file['id'])
   except errors.HttpError, err:
       if err.resp.get('content-type', '').startswith('application/json'):
           reason = json.loads(err.content)['error']
           print(reason)
-  return None
+      return None
+    
 
 def insert_folder(parent_id,folder_name):
     service = get_service('v3')
@@ -119,5 +120,20 @@ def find_parent_id(file_name):
             folder_id = files['id']
             break
     return folder_id
+    
+def load_file(file_id):
+    service = get_service('v2')
+    #service.files().list(q="name contains 'cedulas-Buena-Nota'").execute()
+    for files in service.files().list().execute()['items']:
+        if files['id'] == file_id:
+            imp = files
+            break          
+    download_url = str(imp['downloadUrl'])
+    del(imp)
+    resp, content = service._http.request(download_url)
+    id_list =  content.split(",")
+    
+    return id_list
+    
     
 # NECESITO METODO PARA BORRAR CARPETAS PREVIAS
