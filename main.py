@@ -6,14 +6,14 @@ Author: @sarangof
 
 # Imports, etc.
 from jotform import JotformAPIClient
-import pandas as pd
 import filecmp
 from shutil import copyfile
-from sampling import *
-from generar_bdd import *
-from generar_visualizaciones import *
+from sampling import generar_muestra
+from generar_bdd import create_db
+from generar_visualizaciones import vis_answers
 import sys
 import os
+import re
 
 reload(sys)  
 sys.setdefaultencoding('utf8')
