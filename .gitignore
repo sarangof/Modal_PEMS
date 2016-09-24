@@ -1,6 +1,7 @@
 client_secret.json
-.csv
-.xls
-.pyc
-.log
-.txt
+*.csv
+*.xls
+*.pyc
+*.log
+*.txt
+*.png

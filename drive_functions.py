@@ -79,10 +79,10 @@ def insert_file(title, description, parent_id, filename):
     body['parents'] = [{'id': parent_id}]
 
   try:
-    file = service.files().insert(
-        body=body,
-        media_body=media_body).execute()
-    return str(file['id'])
+      file = service.files().insert(
+      body=body,
+      media_body=media_body).execute()
+      return str(file['id'])
   except errors.HttpError, err:
       if err.resp.get('content-type', '').startswith('application/json'):
           reason = json.loads(err.content)['error']

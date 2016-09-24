@@ -15,6 +15,11 @@ import re
 googleKey = 'AIzaSyBvuKUfCCTNzc8etkAuaU-16uzl3N4f6Vw'
 
 def submission_to_dict(submission,googleKey=googleKey):
+    """
+    Creates a simple dictionary from the submission.
+    Keys: questions
+    Values: answers
+    """
     dct = {}
     for replies in submission:
         for questions in replies['answers']:
@@ -65,32 +70,37 @@ def submission_to_dict(submission,googleKey=googleKey):
     return dct
 
 def create_db(long_submission,short_submission,sample_id,name):
+    """
+    Creates a pandas data frame that includes both surveys and exports it to Google Drive.
+    """
     sample_list = load_file(sample_id)
+    filename = str(name)+'.csv'
+    title, description = filename, 'BDD '+str(name)+'.'
+    folder_id = find_parent_id(name)
     if check_duplicate_files('cedulas-'+name+'.csv')==True:
         # Fill out a dictionary with the right formats for each answer
         data_long = pd.DataFrame([]).from_dict(submission_to_dict(long_submission))
-        # These next two lines are temporary.
+        # Next two lines are temporary.
         data_short = data_long[data_long.columns[:20]]#pd.DataFrame([]).from_dict(submission_to_dict(short_submission))
         data_short[u'2. Número de cédula'] = ['1037611243','1037611244']                   
         data = pd.concat([data_short,data_long])
         data = data.set_index(u'2. Número de cédula') #.encode('utf-8')
-        filename = str(name)+'.csv'
+        # Create file and insert it to Drive                 
         data.to_csv(filename)
-        parent_id = '0B3D2VjgtkabkaWdQcU9uMkhRaUk'
-        title = filename
-        description = 'BDD '+str(name)+'.'
-        
-        # Insert file to Drive        
-        folder_id = find_parent_id(name)
-        insert_file(title, description, folder_id, filename)   
-        
-        return data
-        
+        insert_file(title, description, folder_id, filename) 
+        # Calculate percentage of match and report it on a file.
+        match = 200.0 * len(set(sample_list) & set(data_long[u'2. Número de cédula'])) / (
+                len(sample_list) + len(data_long[u'2. Número de cédula']))
+        with open('Detalles-muestreo.csv', "w") as text_file:
+            text_file.write('Porcentaje de encuesta larga completada: '+str(float(match)))
+            description = 'Detalles sobre el muestreo.'
+        insert_file('Detalles-muestreo', description, folder_id,'Detalles-muestreo.csv')  
+        return data        
     else:
         with open(filename, "w") as text_file:
-            folder_id = parent_id
             text_file.write('No hay muestra generada para esta empresa')
-            insert_file(title, description, folder_id, filename) 
+        insert_file(title, description, folder_id, filename) 
+        return None
 
     
 
