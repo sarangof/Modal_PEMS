@@ -104,10 +104,7 @@ if new_submission:
         data = create_db(long_survey_submission,short_survey_submission,sample_id,name=nombre_empresa) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa
         # Import short survey submission
         vis_answers(data,name=nombre_empresa) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa/visualizaciones
-        
-#        generar_grupos(largo,corto,nombre_empresa=None)            
-        
-        
+        #generar_grupos(data,nombre_empresa=None)                    
     
     """
     Third request form:
@@ -115,5 +112,6 @@ if new_submission:
     """
     if new_form_3:
         # generar_grupos para todas las BDD
+        # data: BDD consolidada.
         pass
     

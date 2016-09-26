@@ -69,6 +69,18 @@ def submission_to_dict(submission,googleKey=googleKey):
                 continue
     return dct
 
+def update_main_db(data):
+    try: 
+        new_ag_db = pd.read_csv('BDD_PEMS_agregada.csv',index_col='2. Número de cédula').join(data, how='outer',rsuffix='_b')
+        filter_col = [col for col in list(new_ag_db) if col.endswith('_b')==False]
+        new_ag_db = new_ag_db[filter_col]
+        new_ag_db.to_csv('BDD_PEMS_agregada.csv')
+    except IOError:
+        data.to_csv('BDD_PEMS_agregada.csv')
+    insert_file('BDD_PEMS_agregada.csv',
+                'Base de datos agregada. Toma la ultima respuesta por numero de cedula.', 
+                '0B3D2VjgtkabkSVh4d0I2RzZ0LWc', 'BDD_PEMS_agregada.csv') 
+
 def create_db(long_submission,short_submission,sample_id,name):
     """
     Creates a pandas data frame that includes both surveys and exports it to Google Drive.
@@ -87,6 +99,7 @@ def create_db(long_submission,short_submission,sample_id,name):
         data = data.set_index(u'2. Número de cédula') #.encode('utf-8')
         # Create file and insert it to Drive                 
         data.to_csv(filename)
+        update_main_db(data)
         insert_file(title, description, folder_id, filename) 
         # Calculate percentage of match and report it on a file.
         match = 200.0 * len(set(sample_list) & set(data_long[u'2. Número de cédula'])) / (
