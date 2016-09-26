@@ -24,19 +24,26 @@ def vis_answers(data,name):
                 cnt +=1
             except TypeError:
                 # FUCK THIS CASE.
-                try:
-                    D = {}
+                if type(data[cols][0])==dict:
+                    new = True
                     for it in data[cols]:
-                        for k,v in it.iteritems():
-                            pass
+                        dc = dict([a, int(x)] for a, x in it.iteritems())
+                        df = pd.DataFrame([]).from_dict(dc,orient='index')
+                        if new:
+                            D = df
+                        else:
+                            D = D + df
+                            new = False
+                    D.plot()
+                    print(str(cols))
+                        
     #                D = {k:v/n for k,v in D.iteritems()}
     #                plt.bar(range(len(D)), D.values(), align='center')
     #                plt.title(cols)
     #                plt.xticks(range(len(D)), D.keys())
     #                plt.savefig('data_viz/'+str(cnt)+'.png')
                     print('This case needs to be reviewed')
-                except AttributeError:
-                    #print cols
+
                     continue
 
 
