@@ -135,5 +135,46 @@ def load_file(file_id):
     
     return id_list
     
+
+def update_file(file_id, title, description, filename):
+  """Update an existing file's metadata and content.
+
+  Args:
+    service: Drive API service instance.
+    file_id: ID of the file to update.
+    new_title: New title for the file.
+    new_description: New description for the file.
+    new_mime_type: New MIME type for the file.
+    new_filename: Filename of the new content to upload.
+    new_revision: Whether or not to create a new revision for this file.
+  Returns:
+    Updated file metadata if successful, None otherwise.
+  """
+  service = get_service('v2')
+  try:
+    # First retrieve the file from the API.
+    file = service.files().get(fileId=file_id).execute()
+
+    # File's new metadata.
+    body = {
+    'title': title,
+    'description': description,
+    'mimeType': 'text/csv'
+    }  
+    
+    # File's new content.
+    media_body = MediaFileUpload(filename, mimetype='text/csv',body=body, resumable=True)
+    
+
+    # Send the request to the API.
+    updated_file = service.files().update(
+        fileId=file_id,
+        body=file,
+        media_body=media_body).execute()
+    return updated_file
+  except errors.HttpError, error:
+    print('An error occurred: %s' % error)
+    return None
+    
     
 # NECESITO METODO PARA BORRAR CARPETAS PREVIAS

@@ -24,27 +24,51 @@ def vis_answers(data,name):
                 cnt +=1
             except TypeError:
                 # FUCK THIS CASE.
-                if type(data[cols][0])==dict:
+                if type(data[cols][n-1])==dict:
                     new = True
-                    for it in data[cols]:
-                        dc = dict([a, int(x)] for a, x in it.iteritems())
-                        df = pd.DataFrame([]).from_dict(dc,orient='index')
-                        if new:
-                            D = df
-                        else:
-                            D = D + df
-                            new = False
-                    D.plot()
-                    print(str(cols))
+                    try:
+                        for it in data[cols]:
+                            try:
+                                dc = dict([a, int(x)] for a, x in it.iteritems())
+                                df = pd.DataFrame([]).from_dict(dc,orient='index')
+                                if new:
+                                    D = df
+                                else:
+                                    D = D + df
+                                    new = False
+                                D.plot(kind='bar')
+                                plt.title(cols)
+                                plt.savefig('data_viz/'+str(cnt)+'.png')
+                                cnt +=1
+                            except AttributeError:
+                                pass
+                            
+                    except ValueError:
+                        df = pd.DataFrame([])
+                        bl = False
+                        for it in data[cols]:
+                            try: 
+                                df = df.append(it,ignore_index=True)
+                                bl = True
+                            except TypeError:
+                                pass
+                        if bl:
+                            for cl in df:
+                                df[cl].value_counts().plot(kind='bar')
+                                plt.title(cols)
+                                plt.savefig('data_viz/'+str(cnt)+'.png')
+                                cnt +=1
+                            
+                    
+                        #print(str(cols))
                         
     #                D = {k:v/n for k,v in D.iteritems()}
     #                plt.bar(range(len(D)), D.values(), align='center')
     #                plt.title(cols)
     #                plt.xticks(range(len(D)), D.keys())
     #                plt.savefig('data_viz/'+str(cnt)+'.png')
-                    print('This case needs to be reviewed')
+                        #print('This case needs to be reviewed')
 
-                    continue
 
 
 

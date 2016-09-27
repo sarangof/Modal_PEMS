@@ -2,11 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
-import seaborn as sns
-from jotform import JotformAPIClient
 from  datetime import datetime
-import matplotlib.pyplot as plt
-from drive_functions import insert_folder,insert_file,check_duplicate_files, find_parent_id, load_file
+from drive_functions import insert_file,check_duplicate_files, find_parent_id, load_file, update_file
 import requests
 import json
 import re
@@ -77,9 +74,15 @@ def update_main_db(data):
         new_ag_db.to_csv('BDD_PEMS_agregada.csv')
     except IOError:
         data.to_csv('BDD_PEMS_agregada.csv')
-    insert_file('BDD_PEMS_agregada.csv',
-                'Base de datos agregada. Toma la ultima respuesta por numero de cedula.', 
-                '0B3D2VjgtkabkSVh4d0I2RzZ0LWc', 'BDD_PEMS_agregada.csv') 
+    if check_duplicate_files('BDD_PEMS_agregada.csv')==False:
+        insert_file('BDD_PEMS_agregada.csv',
+                    'Base de datos agregada. Toma la ultima respuesta por numero de cedula.', 
+                    '0B3D2VjgtkabkSVh4d0I2RzZ0LWc', 'BDD_PEMS_agregada.csv') 
+    else:
+        update_file('BDD_PEMS_agregada.csv',
+            'Base de datos agregada. Toma la ultima respuesta por numero de cedula.', 
+            '0B3D2VjgtkabkSVh4d0I2RzZ0LWc', 'BDD_PEMS_agregada.csv') 
+            
 
 def create_db(long_submission,short_submission,sample_id,name):
     """
