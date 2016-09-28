@@ -36,7 +36,6 @@ def submission_to_dict(submission,googleKey=googleKey):
                     dr = answer['addr_line1']
                     direc = '+'.join(re.findall(r"[\w']+",dr))
                     munici = replies['answers']['22']['answer']
-                    #add = '1600+Amphitheatre+Parkway,+Mountain+View,+CA'
                     call = 'https://maps.googleapis.com/maps/api/geocode/json?address='+direc+'+'+munici+'+'+'+Colombia'+'&key='+googleKey
                     request = requests.get(call)
                     
@@ -67,6 +66,9 @@ def submission_to_dict(submission,googleKey=googleKey):
     return dct
 
 def update_main_db(data):
+    """
+    Function that decides how and where to create or update the aggregated data base for all companies.
+    """
     try: 
         new_ag_db = pd.read_csv('BDD_PEMS_agregada.csv',index_col='2. Número de cédula').join(data, how='outer',rsuffix='_b')
         filter_col = [col for col in list(new_ag_db) if col.endswith('_b')==False]
@@ -93,32 +95,44 @@ def create_db(long_submission,short_submission,sample_id,name):
     title, description = filename, 'BDD '+str(name)+'.'
     folder_id = find_parent_id(name)
     if check_duplicate_files('cedulas-'+name+'.csv')==True:
-        # Fill out a dictionary with the right formats for each answer
         data_long = pd.DataFrame([]).from_dict(submission_to_dict(long_submission))
         # Next two lines are temporary.
         data_short = data_long[data_long.columns[:20]]#pd.DataFrame([]).from_dict(submission_to_dict(short_submission))
         data_short[u'2. Número de cédula'] = ['1037611243','1037611244']                   
+        
         data = pd.concat([data_short,data_long])
         data = data.set_index(u'2. Número de cédula') 
         
+        # Create a variable that accounts for terrain elevation
+        elevation_list = []
+        distance_list = []
         for pair in data[u'5. Dirección'] :
             try:
                 lon1,lat1 = pair
                 lat2,lon2 = '6.2475', '-75.5595'
                 path = str(lat1)+','+str(lon1)+'|'+lat2+','+lon2
-                call = 'https://maps.googleapis.com/maps/api/elevation/json?locations='+path+'&path='+path+'&samples=2&key='+googleKey
-                request = requests.get(call)
-                d = json.loads(request.content) 
-                if d['status'] == 'OK':
-                    ori,dest = d['results']
-                    data['Pendiente'] = float(ori['elevation']) - float(dest['elevation'])
+                call_topo = 'https://maps.googleapis.com/maps/api/elevation/json?locations='+path+'&path='+path+'&samples=2&key='+googleKey
+                call_dist = 'https://maps.googleapis.com/maps/api/distancematrix/json?origins='+str(lat1)+','+str(lon1)+'&destinations='+lat2+','+lon2+'&key='+googleKey
+                request_topo = requests.get(call_topo)
+                request_dist = requests.get(call_dist)
+                d_topo = json.loads(request_topo.content) 
+                d_dist = json.loads(request_dist.content) 
+                if d_topo['status'] == 'OK':
+                    ori1,dest1 = d_topo['results']
+                    elevation_list.append(float(ori1['elevation']) - float(dest1['elevation']))
+                if d_dist['status'] == 'OK': 
+                    distance_list.append(d_dist['rows'][0]['elements'][0]['distance']['value'])
+            except TypeError:
+                elevation_list.append('NA')
+                distance_list.append('NA')
+        data['Pendiente'] = elevation_list
+        data['Distancia'] = distance_list
         
-        #data['m_topografia'] = 
-        
-        # Create file and insert it to Drive                 
+        # Create DB file and insert it to Drive                 
         data.to_csv(filename)
         update_main_db(data)
         insert_file(title, description, folder_id, filename) 
+        
         # Calculate percentage of match and report it on a file.
         match = 200.0 * len(set(sample_list) & set(data_long[u'2. Número de cédula'])) / (
                 len(sample_list) + len(data_long[u'2. Número de cédula']))
@@ -126,6 +140,7 @@ def create_db(long_submission,short_submission,sample_id,name):
             text_file.write('Porcentaje de encuesta larga completada: '+str(float(match)))
             description = 'Detalles sobre el muestreo.'
         insert_file('Detalles-muestreo', description, folder_id,'Detalles-muestreo.csv')  
+        
         return data        
     else:
         with open(filename, "w") as text_file:
