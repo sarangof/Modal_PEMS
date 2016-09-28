@@ -106,14 +106,12 @@ def create_db(long_submission,short_submission,sample_id,name):
                 lon1,lat1 = pair
                 lat2,lon2 = '6.2475', '-75.5595'
                 path = str(lat1)+','+str(lon1)+'|'+lat2+','+lon2
-                call = 'https://maps.googleapis.com/maps/api/elevation/json?locations='+path+'&path='+path+'&samples=3&key='+googleKey
+                call = 'https://maps.googleapis.com/maps/api/elevation/json?locations='+path+'&path='+path+'&samples=2&key='+googleKey
                 request = requests.get(call)
                 d = json.loads(request.content) 
-        
-        path = '40.714728,-73.998672|-34.397,150.644'  
-        call = 'https://maps.googleapis.com/maps/api/elevation/json?locations=40.714728,-73.998672|-34.397,150.644&path='+path+'&samples=2&key='+googleKey
-        request = requests.get(call)
-        d = json.loads(request.content) 
+                if d['status'] == 'OK':
+                    ori,dest = d['results']
+                    data['Pendiente'] = float(ori['elevation']) - float(dest['elevation'])
         
         #data['m_topografia'] = 
         
