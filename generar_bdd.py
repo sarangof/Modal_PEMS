@@ -99,7 +99,24 @@ def create_db(long_submission,short_submission,sample_id,name):
         data_short = data_long[data_long.columns[:20]]#pd.DataFrame([]).from_dict(submission_to_dict(short_submission))
         data_short[u'2. Número de cédula'] = ['1037611243','1037611244']                   
         data = pd.concat([data_short,data_long])
-        data = data.set_index(u'2. Número de cédula') #.encode('utf-8')
+        data = data.set_index(u'2. Número de cédula') 
+        
+        for pair in data[u'5. Dirección'] :
+            try:
+                lon1,lat1 = pair
+                lat2,lon2 = '6.2475', '-75.5595'
+                path = str(lat1)+','+str(lon1)+'|'+lat2+','+lon2
+                call = 'https://maps.googleapis.com/maps/api/elevation/json?locations='+path+'&path='+path+'&samples=3&key='+googleKey
+                request = requests.get(call)
+                d = json.loads(request.content) 
+        
+        path = '40.714728,-73.998672|-34.397,150.644'  
+        call = 'https://maps.googleapis.com/maps/api/elevation/json?locations=40.714728,-73.998672|-34.397,150.644&path='+path+'&samples=2&key='+googleKey
+        request = requests.get(call)
+        d = json.loads(request.content) 
+        
+        #data['m_topografia'] = 
+        
         # Create file and insert it to Drive                 
         data.to_csv(filename)
         update_main_db(data)
@@ -118,7 +135,8 @@ def create_db(long_submission,short_submission,sample_id,name):
         insert_file(title, description, folder_id, filename) 
         return None
 
-    
+
+
 
 """
 plot_instructions = {u'10. Número de hijos':'bar', 
