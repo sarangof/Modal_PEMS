@@ -6,7 +6,7 @@ import re
 import pandas as pd
 import numpy  as np
 from sklearn.cross_validation import train_test_split
-from drive_functions import insert_file, check_duplicate_files, insert_folder, find_parent_id
+from drive_functions import insert_file, check_duplicate_files, insert_folder, find_parent_id, insert_new
 
 def generar_muestra(url_bdd,nombre,n_sample):
     """
@@ -28,11 +28,6 @@ def generar_muestra(url_bdd,nombre,n_sample):
     parent_id = '0B3D2VjgtkabkSVh4d0I2RzZ0LWc' # '0Bz78HNrCokDoc3RQTWYyWk94RG8'
     title = filename
     description = 'Cedulas a encuestar en empresa '+str(nombre)+'.'
-    if check_duplicate_files(nombre)==False:
-        folder_id = insert_folder(parent_id,nombre)    
-        sample_id = insert_file(title, description, folder_id, 'Files/'+filename) 
-    else:
-        folder_id = find_parent_id(nombre)
-        sample_id = insert_file(title, description, folder_id,  'Files/'+filename)   
+    folder_id,sample_id = insert_new(nombre,parent_id,title,description,filename) 
         
     return sample_id

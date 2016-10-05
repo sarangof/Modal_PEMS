@@ -55,7 +55,7 @@ def get_service(version):
     service = discovery.build('drive', version, http=http)
     return service
 
-def insert_file(title, description, parent_id, filename):
+def insert_file(title, description, parent_id, filename, mimetype = 'text/csv'):
   """Insert new file.
 
   Args:
@@ -68,11 +68,11 @@ def insert_file(title, description, parent_id, filename):
     Inserted file metadata if successful, None otherwise.
   """
   service = get_service('v2')
-  media_body = MediaFileUpload(filename, mimetype='text/csv', resumable=True)
+  media_body = MediaFileUpload(filename, mimetype, resumable=True)
   body = {
     'title': title,
     'description': description,
-    'mimeType': 'text/csv'
+    'mimeType': mimetype
   }
   # Set the parent folder.
   if parent_id:
@@ -175,6 +175,14 @@ def update_file(file_id, title, description, filename):
   except errors.HttpError, error:
     print('An error occurred: %s' % error)
     return None
-    
+
+def insert_new(nombre,parent_id,title,description,filename):
+    if check_duplicate_files(nombre)==False:
+        folder_id = insert_folder(parent_id,nombre)    
+        sample_id = insert_file(title, description, folder_id, 'Files/'+filename) 
+    else:
+        folder_id = find_parent_id(nombre)
+        sample_id = insert_file(title, description, folder_id,  'Files/'+filename)   
+    return folder_id, sample_id
     
 # NECESITO METODO PARA BORRAR CARPETAS PREVIAS

@@ -7,6 +7,7 @@ from drive_functions import insert_file,check_duplicate_files, find_parent_id, l
 import requests
 import json
 import re
+from numpy import nan
 
 # Google Maps API for georeferencing
 googleKey = 'AIzaSyBvuKUfCCTNzc8etkAuaU-16uzl3N4f6Vw'
@@ -23,9 +24,11 @@ def submission_to_dict(submission,googleKey=googleKey):
             text   = replies['answers'][questions]['text']
             tp = replies['answers'][questions]['type']
             try:
+                answer = int(replies['answers'][questions]['answer'])
+            except (ValueError, TypeError):
                 answer = replies['answers'][questions]['answer']
             except KeyError:
-                answer = 'NA'
+                answer = nan
             try:
                 if tp == 'control_matrix':
                     print(answer)
@@ -49,6 +52,7 @@ def submission_to_dict(submission,googleKey=googleKey):
                 elif tp in ['control_dropdown','control_textbox','control_spinner','control_scale','control_number','control_radio']:
                     content = answer
                 elif tp == 'control_datetime':
+                    text = 'Edad'
                     b = datetime.strptime(answer['day']+answer['month']+answer['year'],'%d%M%Y')
                     a = datetime.now()
                     content = (a-b).days/365
@@ -56,7 +60,7 @@ def submission_to_dict(submission,googleKey=googleKey):
                     content = datetime.strptime(answer['hourSelect']+answer['minuteSelect']+answer['ampm'],'%H%M%p')
                 else:
                     #print tp
-                    content = ['something is missing.']           
+                    content = nan         
                 if text in dct.keys():
                     dct[text].append(content)
                 else:
@@ -121,10 +125,10 @@ def create_db(long_submission,short_submission,sample_id,name):
                     ori1,dest1 = d_topo['results']
                     elevation_list.append(float(ori1['elevation']) - float(dest1['elevation']))
                 if d_dist['status'] == 'OK': 
-                    distance_list.append(d_dist['rows'][0]['elements'][0]['distance']['value'])
+                    distance_list.append(float(d_dist['rows'][0]['elements'][0]['distance']['value']))
             except TypeError:
-                elevation_list.append('NA')
-                distance_list.append('NA')
+                elevation_list.append(nan)
+                distance_list.append(nan)
         data['Pendiente'] = elevation_list
         data['Distancia'] = distance_list
         
