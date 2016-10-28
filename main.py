@@ -4,7 +4,9 @@
 Author: @sarangof
 """
 
-# Imports, etc.
+"""
+Imports, etc.
+"""
 from jotform import JotformAPIClient
 import filecmp
 from shutil import copyfile
@@ -19,10 +21,12 @@ import re
 reload(sys)  
 sys.setdefaultencoding('utf8')
 
-# Jotform API call, submission ids, etc.
-FORM_1 = "62355313880152"
-FORM_2 = "62357176330151"
-FORM_3 = "62356528846163"
+"""
+Jotform API call, submission ids, etc.
+"""
+FORM_1 = "62355313880152" # Interfaz de usuario
+FORM_2 = "62357176330151" # Generar análisis por empresa
+FORM_3 = "62356528846163" # Generar datos a partir del consolidado
 form_list  = [FORM_1,FORM_2,FORM_3]
 jotFormKey = '33dcf578e3523959b282e1bebff1f581'
 jotformAPIClient = JotformAPIClient(jotFormKey)
@@ -99,7 +103,7 @@ if new_submission:
         
         submission = return_submission(FORM_2)
         nombre_empresa = '-'.join(re.findall(r"[\w']+",str(submission['answers']['12']['answer'])))   
-        long_survey_submission  = jotformAPIClient.get_form_submissions('62214117688154')
+        long_survey_submission  = jotformAPIClient.get_form_submissions('62284736240152',limit=300)
         short_survey_submission = jotformAPIClient.get_form_submissions('62646480094157')  # change survey ID
         # Generar para largo y para corto
         data = create_db(long_survey_submission,short_survey_submission,sample_id,name=nombre_empresa) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa

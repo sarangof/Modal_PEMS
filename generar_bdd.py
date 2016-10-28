@@ -53,6 +53,7 @@ def submission_to_dict(submission,googleKey=googleKey):
                     content = answer
                 elif tp == 'control_datetime':
                     text = 'Edad'
+                    print(answer['day'])
                     b = datetime.strptime(answer['day']+answer['month']+answer['year'],'%d%M%Y')
                     a = datetime.now()
                     content = (a-b).days/365
