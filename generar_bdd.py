@@ -20,7 +20,6 @@ def submission_to_dict(submission,googleKey=googleKey):
     """
     dct = {}
     for replies in submission:
-        it=0
         for questions in replies['answers']:
             text   = replies['answers'][questions]['text']
             tp = replies['answers'][questions]['type']
@@ -34,10 +33,10 @@ def submission_to_dict(submission,googleKey=googleKey):
                 if answer == unicode('') or answer == [unicode('')]:
                     #print('ENTRO')
                     content = np.nan
-                    if text in dct.keys():
-                        dct[text].append(content)
+                    if str(questions)+'_'+text in dct.keys():
+                        dct[str(questions)+'_'+text].append(content)
                     else:
-                        dct[text] = [content]
+                        dct[str(questions)+'_'+text] = [content]
                 else:
                     if tp == 'control_matrix':
                         #print(answer)
@@ -64,21 +63,17 @@ def submission_to_dict(submission,googleKey=googleKey):
                         text = 'Edad'
                         #print(answer['day'])
                         b = datetime.strptime(answer['day']+answer['month']+answer['year'],'%d%M%Y')
-                        a = datetime.now()
+                        a = datetime.now()  
                         content = (a-b).days/365
                     elif tp == 'control_time':
                         content = datetime.strptime(answer['hourSelect']+answer['minuteSelect']+answer['ampm'],'%H%M%p')
                     else:
                         #print tp
                         content = np.nan         
-                    if text in dct.keys():
-                        if len(dct[text]) <= len(submission):
-                            dct[text].append(content)
-                        else:
-                            dct[text+str(it)].append(content)
-                            it += 1
+                    if str(questions)+'_'+text in dct.keys():
+                        dct[str(questions)+'_'+text].append(content)
                     else:
-                        dct[text] = [content]
+                        dct[str(questions)+'_'+text] = [content]
             except KeyError:
                 continue
     return dct
