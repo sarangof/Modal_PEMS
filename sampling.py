@@ -18,7 +18,7 @@ def generar_muestra(url_bdd,nombre,n_sample):
     filename = 'cedulas-'+nombre+'.csv' 
     print(len(bdd_empresa))
     try:     
-        pop,sample = train_test_split(np.array(bdd_empresa.cedula),test_size=n_sample,stratify=np.array(bdd_empresa.department))
+        pop,sample = train_test_split(np.array(bdd_empresa.cedula),test_size=n_sample) # stratify=np.array(bdd_empresa.departamento)
         sample.tofile('Files/'+filename,sep=',')
     except ValueError:
         with open('Files/'+filename, "w") as text_file:
