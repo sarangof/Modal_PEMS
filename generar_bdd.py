@@ -11,6 +11,22 @@ import numpy as np
 
 # Google Maps API for georeferencing
 googleKey = 'AIzaSyBvuKUfCCTNzc8etkAuaU-16uzl3N4f6Vw'
+# This will have to change when everything is unified
+emissions_mode = {u'Bus/Buseta/Bus/Buseta/Microbus/Bus intermunicipal': 0.00018,
+                  u'Bus/Buseta/Microbus/Bus intermunicipal': 0.00018,
+            u'Metro/Metroplus/Integrados/Tranvia/Ruta con tarifa integrada': 0.00010,
+            u'Taxi/Taxi colectivo Vehículo compartido pertenenciente a la empresa/entidad Vehículo privado perteneciente a la empresa/entidad': 0.00083903045,
+             u'Taxi/Taxi colectivo':  0.00083903045,
+             u'Vehículo compartido pertenenciente a la empresa/entidad': 0.00083903045,
+             u'Veh\xedculo privado perteneciente a la empresa/entidad': 0.00083903045,
+            u'Auto (Conductor o Acompañante)': 0.00083903045,
+            u'Moto (Conductor o Acompañante)': 0.0007393045,
+            u'Bicicleta': 0.000021,
+            u'A pie': 0.000005,
+            u'A pie\u201d': 0.000005,
+            u'A Pie': 0.000005
+                }
+                # Dividir por occupancy rate.
 
 def submission_to_dict(submission,googleKey=googleKey):
     """
@@ -130,7 +146,7 @@ def create_db(long_submission,short_submission,sample_id,name):
                 if d_topo['status'] == 'OK':
                     ele_dots = [punto['elevation'] for punto in d_topo['results']]
                     temp_list = np.array(ele_dots+ele_dots[-1:]) -  np.array(ele_dots[:1]+ele_dots) 
-                    elevation_list.append(float(np.abs(temp_list).sum()))
+                    elevation_list.append(float(np.abs(temp_list).sum()/4.))
                 if d_dist['status'] == 'OK': 
                     distance_list.append(float(d_dist['rows'][0]['elements'][0]['distance']['value']))
             except (TypeError, KeyError) as e:
@@ -138,7 +154,10 @@ def create_db(long_submission,short_submission,sample_id,name):
                 distance_list.append(np.nan)
         data['Pendiente'] = elevation_list
         data['Distancia'] = distance_list
-        
+        emissions_list = [emissions_mode[unicode(element)] for element in data[u'p68_33._¿Cuál_es_su_medio_habitual_(más_frecuente_y_que_utiliza_por_más_tiempo_en_cada_viaje)_para_regresar_del_trabajo?']]
+        data['Initial_Emmissions'] = emissions_list*data.Distancia
+        # u'p67_32._¿Cuál_es_su_medio_habitual_(más_frecuente_y_que_utiliza_por_más_tiempo_en_cada_viaje)_para_ir_al_trabajo?',
+        #u'p68_33._¿Cuál_es_su_medio_habitual_(más_frecuente_y_que_utiliza_por_más_tiempo_en_cada_viaje)_para_regresar_del_trabajo?',
         # Create DB file and insert it to Drive                 
         data.to_csv(filename)
         update_main_db(data,folder_id)
