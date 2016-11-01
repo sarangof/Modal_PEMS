@@ -109,7 +109,7 @@ if new_submission:
         # Generar para largo y para corto
         data = create_db(long_survey_submission,short_survey_submission,sample_id,name=nombre_empresa) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa
         folder_id = find_parent_id(nombre_empresa)
-        #vis_answers(data,nombre_empresa,folder_id) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa/visualizaciones
+        vis_answers(data,nombre_empresa,folder_id) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa/visualizaciones
         cols = data.columns
         cols = cols.map(lambda x: x.replace(' ', '_') if isinstance(x, (str, unicode)) else x)
         data.columns = cols 

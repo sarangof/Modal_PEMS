@@ -26,7 +26,7 @@ emissions_mode = {u'Bus/Buseta/Bus/Buseta/Microbus/Bus intermunicipal': 0.00018,
             u'A pie\u201d': 0.000005,
             u'A Pie': 0.000005
                 }
-                # Dividir por occupancy rate.
+                # Dividir por occupancy rate?.
 
 def submission_to_dict(submission,googleKey=googleKey):
     """
@@ -154,7 +154,7 @@ def create_db(long_submission,short_submission,sample_id,name):
                 distance_list.append(np.nan)
         data['Pendiente'] = elevation_list
         data['Distancia'] = distance_list
-        emissions_list = [emissions_mode[unicode(element)] for element in data[u'p68_33._¿Cuál_es_su_medio_habitual_(más_frecuente_y_que_utiliza_por_más_tiempo_en_cada_viaje)_para_regresar_del_trabajo?']]
+        emissions_list = [emissions_mode[unicode(element)] for element in data[u'p68_33. ¿Cuál es su medio habitual (más frecuente y que utiliza por más tiempo en cada viaje) para regresar del trabajo?']]
         data['Initial_Emmissions'] = emissions_list*data.Distancia
         # u'p67_32._¿Cuál_es_su_medio_habitual_(más_frecuente_y_que_utiliza_por_más_tiempo_en_cada_viaje)_para_ir_al_trabajo?',
         #u'p68_33._¿Cuál_es_su_medio_habitual_(más_frecuente_y_que_utiliza_por_más_tiempo_en_cada_viaje)_para_regresar_del_trabajo?',

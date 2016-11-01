@@ -11,7 +11,8 @@ def calcular_puntajes(data):
     """
     Aqui se implementan las "funciones" de probabilidad de usar cada uno de los modos.
     """    
-    df = data[['p12_Edad','Pendiente','Distancia']] #'18. Salario'
+    cols = ['p12_Edad','Pendiente','Distancia','p80_16._Salario_(mensual)']
+    df = data[cols] #'18. Salario'
     df= 1./df
     df -= df.min() 
     df /= df.max()  
@@ -29,6 +30,19 @@ def asignar_grupos(data):
     Percepción buena de bicicleta en cuanto a la seguridad y comodidad
     """
     grupo_bici_2 = data
+    
+    """
+    ¿Consideraría usar habitualmente un medio de transporte diferente a XX?
+    ¿Si tuviera que considerar el uso habitual un medio de transporte diferente a XXcuál utilizaría?
+    """
+    
+    grupo_bici_3 = grupo_bici_1 = data.query("(p12_Edad<40.) & (Distancia < 7000) & (N_bicicletas > 0)")
+    
+    #grupo_bici_4 =     
+    
+    #grupo_tp_1 = data
+    
+    #grupo_tp_2 = data
     
     """
     Porcentaje de personas dispuestas a montar en bicicleta

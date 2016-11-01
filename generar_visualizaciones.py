@@ -94,11 +94,21 @@ def min_dist_inside(point, rotation, box):
 
 
 def vis_answers(data,name,parent_id):
+#    cols_listss = [u'p154_¿Cúal es su nivel de satisfacción transportandose habitualmente en taxi a su empresa?',
+#                   u'p157_¿Cúal es su nivel de satisfacción transportandose habitualmente a pie hacia/desde su empresa?',
+#                   u'p158_¿Cúal es su nivel de satisfacción transportándose habitualmente en moto hacia/desde su trabajo?',
+#                   u'p159_¿Cúal es su nivel de satisfacción transportándose habitualmente en bicicleta hacia/desde su trabajo?',
+#                   u'p160_¿Cúal es su nivel de satisfacción transportándose habitualmente en bus hacia/desde su trabajo?',
+#                   u'p161_¿Cúal es su nivel de satisfacción transportándose habitualmente en sistema Metro hacia/desde su trabajo?',
+#                   u'p163_¿Cúal es su nivel de satisfacción transportándose habitualmente en carro hacia/desde su trabajo?']                                                                                                                                                                                                     
     
-    folder_id = insert_folder(parent_id,'Visualizaciones')
-    cnt = 1
-    for cols in data.columns:
-        
+    cols_listss = [u'p74_¿Podría y estaría dispuesto a recoger personas en su carro de acuerdo a una ruta compartida?']
+    #folder_id = insert_folder(parent_id,'Visualizaciones')
+    for cols in cols_listss:#data.columns:
+        if cols.endswith(':'):
+            cols_n = cols[10:65]
+        else: 
+            cols_n = cols[10:65]
         if 'Dirección' in cols:
             # Select all addresses and all the selected work locations, and just map them
             print("Direccion")
@@ -109,9 +119,9 @@ def vis_answers(data,name,parent_id):
                 data[cols].plot(kind='box')
                 fig.canvas.mpl_connect('draw_event', on_draw)
                 plt.title(cols)
-                plt.savefig('data_viz/'+str(cnt)+'.png')  
-                insert_file(str(cnt)+'.png',' ',folder_id, 'data_viz/'+str(cnt)+'.png',mimetype='image/png') 
-                cnt +=1           
+                plt.tight_layout()
+                plt.savefig('data_viz/'+str(cols_n)+'.png')  
+                #insert_file(str(cols)+'.png',' ',folder_id, 'data_viz/'+str(cols)+'.png',mimetype='image/png')         
         else:
         
             try:
@@ -120,9 +130,9 @@ def vis_answers(data,name,parent_id):
                 data[cols].value_counts().plot(kind='bar')
                 fig.canvas.mpl_connect('draw_event', on_draw)
                 plt.title(cols)
-                plt.savefig('data_viz/'+str(cnt)+'.png')  
-                insert_file(str(cnt)+'.png',' ',folder_id, 'data_viz/'+str(cnt)+'.png',mimetype='image/png') 
-                cnt +=1 
+                plt.tight_layout()
+                plt.savefig('data_viz/'+str(cols_n)+'.png')  
+                #insert_file(str(cols)+'.png',' ',folder_id, 'data_viz/'+str(cols)+'.png',mimetype='image/png') 
             except TypeError:
                 try: 
                     #plt.figure()
@@ -131,9 +141,9 @@ def vis_answers(data,name,parent_id):
                     data[cols].value_counts().plot(kind='bar')
                     fig.canvas.mpl_connect('draw_event', on_draw)
                     plt.title(cols)
-                    plt.savefig('data_viz/'+str(cnt)+'.png')
-                    insert_file(str(cnt)+'.png',' ',folder_id, 'data_viz/'+str(cnt)+'.png',mimetype='image/png') 
-                    cnt +=1
+                    plt.tight_layout()
+                    plt.savefig('data_viz/'+str(cols_n)+'.png')
+                    #insert_file(str(cols)+'.png',' ',folder_id, 'data_viz/'+str(cols)+'.png',mimetype='image/png') 
                 except TypeError:
                     # FUCK THIS CASE.
                     if type(data[cols][-1:])==dict:
@@ -153,9 +163,9 @@ def vis_answers(data,name,parent_id):
                                     D.plot(kind='bar')
                                     fig.canvas.mpl_connect('draw_event', on_draw)
                                     plt.title(cols)
-                                    plt.savefig('data_viz/'+str(cnt)+'.png')
-                                    insert_file(str(cnt)+'.png',' ',folder_id, 'data_viz/'+str(cnt)+'.png',mimetype='image/png') 
-                                    cnt +=1
+                                    plt.tight_layout()
+                                    plt.savefig('data_viz/'+str(cols_n)+'.png')
+                                    #insert_file(str(cols)+'.png',' ',folder_id, 'data_viz/'+str(cols)+'.png',mimetype='image/png') 
                                 except AttributeError:
                                     pass
                                 
@@ -176,9 +186,9 @@ def vis_answers(data,name,parent_id):
                                     df[cl].value_counts().plot(kind='bar')
                                     fig.canvas.mpl_connect('draw_event', on_draw)
                                     plt.title(cols)
-                                    plt.savefig('data_viz/'+str(cnt)+'.png')
-                                    insert_file(str(cnt)+'.png',' ',folder_id, 'data_viz/'+str(cnt)+'.png',mimetype='image/png') 
-                                    cnt +=1
+                                    plt.tight_layout()
+                                    plt.savefig('data_viz/'+str(cols_n)+'.png')
+                                    #insert_file(str(cols)+'.png',' ',folder_id, 'data_viz/'+str(cols)+'.png',mimetype='image/png') 
                     
                         #print(str(cols))
                         
