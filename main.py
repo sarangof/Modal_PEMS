@@ -14,6 +14,7 @@ from sampling import generar_muestra
 from generar_bdd import create_db
 from generar_visualizaciones import vis_answers
 from drive_functions import find_parent_id
+from generar_grupos import *
 import sys
 import os
 import re
@@ -103,14 +104,17 @@ if new_submission:
         
         submission = return_submission(FORM_2)
         nombre_empresa = '-'.join(re.findall(r"[\w']+",str(submission['answers']['12']['answer'])))   
-        long_survey_submission  = jotformAPIClient.get_form_submissions('62284736240152',limit=300)
+        long_survey_submission  = jotformAPIClient.get_form_submissions('62284736240152',limit=2000000)
         short_survey_submission = jotformAPIClient.get_form_submissions('63025286426152')  # change survey ID
         # Generar para largo y para corto
         data = create_db(long_survey_submission,short_survey_submission,sample_id,name=nombre_empresa) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa
-        # Import short survey submission
         folder_id = find_parent_id(nombre_empresa)
-        vis_answers(data,nombre_empresa,folder_id) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa/visualizaciones
-        #generar_grupos(data,nombre_empresa=None)                    
+        #vis_answers(data,nombre_empresa,folder_id) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa/visualizaciones
+        cols = data.columns
+        cols = cols.map(lambda x: x.replace(' ', '_') if isinstance(x, (str, unicode)) else x)
+        data.columns = cols 
+        calcular_porcentajes(data)                    
+        asignar_grupos(data)
     
     """
     Third request form:

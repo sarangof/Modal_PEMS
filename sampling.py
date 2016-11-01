@@ -6,7 +6,7 @@ import re
 import pandas as pd
 import numpy  as np
 from sklearn.cross_validation import train_test_split
-from drive_functions import insert_file, check_duplicate_files, insert_folder, find_parent_id, insert_new
+from drive_functions import insert_new
 
 def generar_muestra(url_bdd,nombre,n_sample):
     """

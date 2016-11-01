@@ -11,15 +11,16 @@ def calcular_puntajes(data):
     """
     Aqui se implementan las "funciones" de probabilidad de usar cada uno de los modos.
     """    
-    df = data[['Edad','Pendiente','Distancia']] #'18. Salario'
-    df= 1./dfca
+    df = data[['p12_Edad','Pendiente','Distancia']] #'18. Salario'
+    df= 1./df
     df -= df.min() 
     df /= df.max()  
     data['Puntaje_bici'] = df.sum(axis=1)/len(df.columns)
     return data
 
 def asignar_grupos(data):
-    grupo_bici_1 = data.query('(Edad<40.) & (Distancia < 7000) ')
+    data['N_bicicletas'] = [x[u'Bicicletas'] for x in data[u'p15_29._¿De_cuántos_vehículos_disponen_en_su_hogar?']]
+    grupo_bici_1 = data.query("(p12_Edad<40.) & (Distancia < 7000) & (N_bicicletas > 0)")
     """
     Quiénes tienen acceso a una bicicleta? 
     Saben andar en bicicleta? 

@@ -96,8 +96,6 @@ def min_dist_inside(point, rotation, box):
 def vis_answers(data,name,parent_id):
     
     folder_id = insert_folder(parent_id,'Visualizaciones')
-    
-    n = len(data)
     cnt = 1
     for cols in data.columns:
         
@@ -138,7 +136,7 @@ def vis_answers(data,name,parent_id):
                     cnt +=1
                 except TypeError:
                     # FUCK THIS CASE.
-                    if type(data[cols][n-1])==dict:
+                    if type(data[cols][-1:])==dict:
                         new = True
                         try:
                             for it in data[cols]:

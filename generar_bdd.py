@@ -130,7 +130,7 @@ def create_db(long_submission,short_submission,sample_id,name):
                 if d_topo['status'] == 'OK':
                     ele_dots = [punto['elevation'] for punto in d_topo['results']]
                     temp_list = np.array(ele_dots+ele_dots[-1:]) -  np.array(ele_dots[:1]+ele_dots) 
-                    elevation_list.append(float(temp_list[temp_list>0.].sum()))
+                    elevation_list.append(float(np.abs(temp_list).sum()))
                 if d_dist['status'] == 'OK': 
                     distance_list.append(float(d_dist['rows'][0]['elements'][0]['distance']['value']))
             except (TypeError, KeyError) as e:

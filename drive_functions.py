@@ -75,8 +75,7 @@ def insert_file(title, description, parent_id, filename, mimetype = 'text/csv'):
     'mimeType': mimetype
   }
   # Set the parent folder.
-  if parent_id:
-    body['parents'] = [{'id': parent_id}]
+  body['parents'] = [{'id': parent_id}]
 
   try:
       file = service.files().insert(
@@ -103,10 +102,20 @@ def insert_folder(parent_id,folder_name):
     return str(created_folder['id'])
     # Manage error
     
-def check_duplicate_files(file_name):
+def check_duplicate_files(file_name,file_id):
+    """
     duplicate = False
     service = get_service('v2')
     for files in service.files().list().execute()['items']:
+        if files['title'].encode('utf-8') == file_name.encode('utf-8'):
+            duplicate=True
+            break
+    return duplicate
+    """
+    duplicate = False
+    service = get_service('v2')
+    query = str("'"+file_id+"' in parents")
+    for files in service.files().list(q=query).execute()['items']:
         if files['title'].encode('utf-8') == file_name.encode('utf-8'):
             duplicate=True
             break
@@ -177,7 +186,7 @@ def update_file(file_id, title, description, filename):
     return None
 
 def insert_new(nombre,parent_id,title,description,filename):
-    if check_duplicate_files(nombre)==False:
+    if check_duplicate_files(nombre,parent_id)==False:
         folder_id = insert_folder(parent_id,nombre)    
         sample_id = insert_file(title, description, folder_id, 'Files/'+filename) 
     else:
