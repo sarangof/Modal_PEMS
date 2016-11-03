@@ -6,6 +6,15 @@ Created on Tue Sep 27 15:26:47 2016
 @author: saf537
 """
 import pandas as pd
+import re
+
+def renombrar_columnas(data):
+    cols_complete = data.columns
+    data.columns = data.columns.map(lambda x: re.sub(r'[^a-zA-Z\d\s]', '', x))
+    cols = data.columns
+    cols = cols.map(lambda x: x.replace(' ', '_') if isinstance(x, (str, unicode)) else x)
+    data.columns = cols 
+    return cols_complete,data
 
 def calcular_puntajes(data):
     """
@@ -21,7 +30,7 @@ def calcular_puntajes(data):
 
 def asignar_grupos(data):
     data['N_bicicletas'] = [x[u'Bicicletas'] for x in data[u'p15_29._¿De_cuántos_vehículos_disponen_en_su_hogar?']]
-    grupo_bici_1 = data.query("(p12_Edad<40.) & (Distancia < 7000) & (N_bicicletas > 0)")
+    grupo_bici_1 = data.query("(p12_Edad<40.) & (Distancia < 7000) & (N_bicicletas > 0) & (p82_30._¿Sabe_montar_en_bicicleta?=Sí)")
     """
     Quiénes tienen acceso a una bicicleta? 
     Saben andar en bicicleta? 
