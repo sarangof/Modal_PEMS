@@ -90,6 +90,9 @@ def insert_file(title, description, parent_id, filename, mimetype = 'text/csv'):
     
 
 def insert_folder(parent_id,folder_name):
+    """
+    Inserts the folder "folder_name" into the folder with the given "parent_id"
+    """
     service = get_service('v3')
     folder_id = parent_id
     file_metadata = {
@@ -97,29 +100,28 @@ def insert_folder(parent_id,folder_name):
       'mimeType' : 'application/vnd.google-apps.folder',
       'parents': [ folder_id ]
     }
-    created_folder = service.files().create(body=file_metadata,
-                                        fields='id').execute()
-    return str(created_folder['id'])
+    duplicate_folder,new_folder_id = check_duplicate_files(folder_name,folder_id)
+    if duplicate_folder==False:
+        created_folder = service.files().create(body=file_metadata,
+                                            fields='id').execute()
+        new_folder_id = str(created_folder['id'])
+    return new_folder_id
     # Manage error
     
-def check_duplicate_files(file_name,file_id):
+def check_duplicate_files(file_name,folder_id):
     """
+    Checks for files with the name "file_name" inside the folder with the given "folder_id".
+    """    
     duplicate = False
+    new_folder_id = None
     service = get_service('v2')
-    for files in service.files().list().execute()['items']:
-        if files['title'].encode('utf-8') == file_name.encode('utf-8'):
-            duplicate=True
-            break
-    return duplicate
-    """
-    duplicate = False
-    service = get_service('v2')
-    query = str("'"+file_id+"' in parents")
+    query = str("'"+folder_id+"' in parents")
     for files in service.files().list(q=query).execute()['items']:
         if files['title'].encode('utf-8') == file_name.encode('utf-8'):
             duplicate=True
+            new_folder_id = str(files['id'])
             break
-    return duplicate
+    return duplicate,new_folder_id
     
 def find_parent_id(file_name):
     folder_id = ''
