@@ -5,14 +5,35 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-from drive_functions import insert_file,insert_folder,check_duplicate_files
+from drive_functions import insert_file,insert_folder
+
+import re
+import unicodedata
+
+sns.set(rc={'axes.facecolor':'white', 'figure.facecolor':'white'})
+sns.set_palette('YlOrBr')
+
+
+def quitar_caracteres_especiales(cols):
+    """
+    cols_complete = data.columns
+    data.columns = data.columns.map(lambda x: ''.join((c for c in unicodedata.normalize('NFD', unicode(x)) if unicodedata.category(c) != 'Mn')))
+    data.columns = data.columns.map(lambda x: re.sub(r'[^a-zA-Z\d\s]', '', x))
+    cols = data.columns
+    data.columns = cols
+    return cols_complete,data
+    """
+    # Removes accents
+    cols = ''.join((c for c in unicodedata.normalize('NFD', unicode(cols)) if unicodedata.category(c) != 'Mn'))
+    cols = re.sub(r'[^a-zA-Z\d\s]', '', cols)
+    return cols
 
 def on_draw(event):
     """Auto-wraps all text objects in a figure at draw-time"""
     
     fig = event.canvas.figure
 
-    # Cycle through all artists in all the axes in the figure
+    # Cycle through all arists in all the axes in the figure
     for ax in fig.axes:
         for artist in ax.get_children():
             # If it's a text artist, wrap it...
@@ -94,102 +115,124 @@ def min_dist_inside(point, rotation, box):
 
 
 def vis_answers(data,name,parent_id):
-#    cols_listss = [u'p154_¿Cúal es su nivel de satisfacción transportandose habitualmente en taxi a su empresa?',
-#                   u'p157_¿Cúal es su nivel de satisfacción transportandose habitualmente a pie hacia/desde su empresa?',
-#                   u'p158_¿Cúal es su nivel de satisfacción transportándose habitualmente en moto hacia/desde su trabajo?',
-#                   u'p159_¿Cúal es su nivel de satisfacción transportándose habitualmente en bicicleta hacia/desde su trabajo?',
-#                   u'p160_¿Cúal es su nivel de satisfacción transportándose habitualmente en bus hacia/desde su trabajo?',
-#                   u'p161_¿Cúal es su nivel de satisfacción transportándose habitualmente en sistema Metro hacia/desde su trabajo?',
-#                   u'p163_¿Cúal es su nivel de satisfacción transportándose habitualmente en carro hacia/desde su trabajo?']                                                                                                                                                                                                     
-    
-    cols_listss = [u'p74_¿Podría y estaría dispuesto a recoger personas en su carro de acuerdo a una ruta compartida?']
+
     #folder_id = insert_folder(parent_id,'Visualizaciones')
-    for cols in cols_listss:#data.columns:
-        if cols.endswith(':'):
-            cols_n = cols[10:65]
-        else: 
-            cols_n = cols[10:65]
+    for cols in data.columns:
+        
+        cols_n = cols
+
+        if len(cols_n):
+            cols_n = cols_n[:150]
+            
         if 'Dirección' in cols:
             # Select all addresses and all the selected work locations, and just map them
             print("Direccion")
             
-        elif 'Pendiente' in cols or 'Distancia' in cols:
-                fig = plt.figure()
-                plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
-                data[cols].plot(kind='box')
-                fig.canvas.mpl_connect('draw_event', on_draw)
-                plt.title(cols)
-                plt.tight_layout()
-                plt.savefig('data_viz/'+str(cols_n)+'.png')  
-                #insert_file(str(cols)+'.png',' ',folder_id, 'data_viz/'+str(cols)+'.png',mimetype='image/png')         
+        elif 'Edad' in cols:
+            fig = plt.figure()
+            plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
+            data[cols].plot(kind='box')
+            fig.canvas.mpl_connect('draw_event', on_draw)
+            plt.title(cols)
+            plt.tight_layout()
+            plt.savefig('data_viz/'+quitar_caracteres_especiales(cols_n)+'.png')  
+            #insert_file(str(cols)+'.png',' ',folder_id, 'data_viz/'+str(cols)+'.png',mimetype='image/png')         
+
+            
+        elif 'Pendiente' in cols or 'Distancia' or 'Emisiones' in cols:
+            try:
+                    fig = plt.figure()
+                    plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
+                    ax = data[cols].dropna().plot(kind='box')
+                    quantile = data['Emisiones'].quantile(.95)
+                    fig.canvas.mpl_connect('draw_event', on_draw)
+                    plt.title(cols)
+                    plt.tight_layout()
+                    ax.set_ylim(0, (quantile))
+                    plt.savefig('data_viz/'+quitar_caracteres_especiales(cols_n)+'.png')  
+                    #insert_file(str(cols)+'.png',' ',folder_id, 'data_viz/'+str(cols)+'.png',mimetype='image/png')         
+            except TypeError:
+                pass
         else:
         
             try:
                 fig = plt.figure()
                 plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
-                data[cols].value_counts().plot(kind='bar')
+                plt.hist(data[cols])
                 fig.canvas.mpl_connect('draw_event', on_draw)
                 plt.title(cols)
-                plt.tight_layout()
-                plt.savefig('data_viz/'+str(cols_n)+'.png')  
+                #plt.tight_layout()
+                plt.savefig('data_viz/'+quitar_caracteres_especiales(cols_n)+'.png')  
                 #insert_file(str(cols)+'.png',' ',folder_id, 'data_viz/'+str(cols)+'.png',mimetype='image/png') 
-            except TypeError:
-                try: 
-                    #plt.figure()
+ 
+                
+            except (TypeError,ValueError):   
+                try:
                     fig = plt.figure()
                     plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
                     data[cols].value_counts().plot(kind='bar')
                     fig.canvas.mpl_connect('draw_event', on_draw)
                     plt.title(cols)
-                    plt.tight_layout()
-                    plt.savefig('data_viz/'+str(cols_n)+'.png')
+                    #plt.tight_layout()
+                    plt.savefig('data_viz/'+quitar_caracteres_especiales(cols_n)+'.png')  
                     #insert_file(str(cols)+'.png',' ',folder_id, 'data_viz/'+str(cols)+'.png',mimetype='image/png') 
                 except TypeError:
-                    # FUCK THIS CASE.
-                    if type(data[cols][-1:])==dict:
-                        new = True
-                        try:
-                            for it in data[cols]:
-                                try:
-                                    dc = dict([a, int(x)] for a, x in it.iteritems())
-                                    df = pd.DataFrame([]).from_dict(dc,orient='index')
-                                    if new:
-                                        D = df
-                                    else:
-                                        D = D + df
+                    try: 
+                        #plt.figure()
+                        fig = plt.figure()
+                        plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
+                        data[cols].value_counts().plot(kind='bar')
+                        fig.canvas.mpl_connect('draw_event', on_draw)
+                        plt.title(cols)
+                        plt.tight_layout()
+                        plt.savefig('data_viz/'+quitar_caracteres_especiales(cols_n)+'.png')
+                        #insert_file(str(cols)+'.png',' ',folder_id, 'data_viz/'+str(cols)+'.png',mimetype='image/png') 
+                    except TypeError:
+                        # FUCK THIS CASE.
+                        if type(data[cols][-1:])==dict:
+                            new = True
+                            try:
+                                for it in data[cols]:
+                                    try:
+                                        dc = dict([a, int(x)] for a, x in it.iteritems())
+                                        df = pd.DataFrame([]).from_dict(dc,orient='index')
+                                        if new:
+                                            D = df
+                                        else:
+                                            D = D + df
+                                            new = False
+                                        fig = plt.figure()
+                                        plt.subplots_adjust(top=0.85)
+                                        D.plot(kind='bar')
+                                        fig.canvas.mpl_connect('draw_event', on_draw)
+                                        plt.title(cols)
+                                        plt.tight_layout()
+                                        plt.savefig('data_viz/'+quitar_caracteres_especiales(cols_n)+'.png')
+                                        #insert_file(str(cols)+'.png',' ',folder_id, 'data_viz/'+str(cols)+'.png',mimetype='image/png') 
+                                    except AttributeError:
+                                        pass
+                                    
+                            except ValueError:
+                                df = pd.DataFrame([])
+                                bl = False
+                                for it in data[cols]:
+                                    try: 
+                                        df = df.append(it,ignore_index=True)
+                                        bl = True
+                                    except TypeError:
+                                        pass
+                                if bl:
+                                    for cl in df:
                                         new = False
-                                    fig = plt.figure()
-                                    plt.subplots_adjust(top=0.85)
-                                    D.plot(kind='bar')
-                                    fig.canvas.mpl_connect('draw_event', on_draw)
-                                    plt.title(cols)
-                                    plt.tight_layout()
-                                    plt.savefig('data_viz/'+str(cols_n)+'.png')
-                                    #insert_file(str(cols)+'.png',' ',folder_id, 'data_viz/'+str(cols)+'.png',mimetype='image/png') 
-                                except AttributeError:
-                                    pass
-                                
-                        except ValueError:
-                            df = pd.DataFrame([])
-                            bl = False
-                            for it in data[cols]:
-                                try: 
-                                    df = df.append(it,ignore_index=True)
-                                    bl = True
-                                except TypeError:
-                                    pass
-                            if bl:
-                                for cl in df:
-                                    new = False
-                                    fig = plt.figure()
-                                    plt.subplots_adjust(top=0.85)
-                                    df[cl].value_counts().plot(kind='bar')
-                                    fig.canvas.mpl_connect('draw_event', on_draw)
-                                    plt.title(cols)
-                                    plt.tight_layout()
-                                    plt.savefig('data_viz/'+str(cols_n)+'.png')
-                                    #insert_file(str(cols)+'.png',' ',folder_id, 'data_viz/'+str(cols)+'.png',mimetype='image/png') 
-                    
+                                        fig = plt.figure()
+                                        plt.subplots_adjust(top=0.85)
+                                        df[cl].value_counts().plot(kind='bar')
+                                        fig.canvas.mpl_connect('draw_event', on_draw)
+                                        plt.title(cols)
+                                        plt.tight_layout()
+                                        plt.savefig('data_viz/'+quitar_caracteres_especiales(cols_n)+'.png')
+                                        #insert_file(str(cols)+'.png',' ',folder_id, 'data_viz/'+str(cols)+'.png',mimetype='image/png') 
+                        
                         #print(str(cols))
                         
     #                D = {k:v/n for k,v in D.iteritems()}

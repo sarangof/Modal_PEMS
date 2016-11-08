@@ -6,10 +6,22 @@ Created on Tue Sep 27 15:26:47 2016
 @author: saf537
 """
 import re
+import unicodedata
 
-def renombrar_columnas(data):
+def quitar_caracteres_especiales(cols):
+    """
     cols_complete = data.columns
+    data.columns = data.columns.map(lambda x: ''.join((c for c in unicodedata.normalize('NFD', unicode(x)) if unicodedata.category(c) != 'Mn')))
     data.columns = data.columns.map(lambda x: re.sub(r'[^a-zA-Z\d\s]', '', x))
+    cols = data.columns
+    data.columns = cols
+    return cols_complete,data
+    """
+    cols = ''.join((c for c in unicodedata.normalize('NFD', unicode(cols)) if unicodedata.category(c) != 'Mn'))
+    return cols
+    
+def quitar_espacios(data):
+    cols_complete = data.columns
     cols = data.columns
     cols = cols.map(lambda x: x.replace(' ', '_') if isinstance(x, (str, unicode)) else x)
     data.columns = cols 
@@ -28,7 +40,6 @@ def calcular_puntajes(data):
     return data
 
 def asignar_grupos(data):
-    data['N_bicicletas'] = [x[u'Bicicletas'] for x in data[u'p1529_De_cuntos_vehculos_disponen_en_su_hogar']]
     grupo_bici_1 = data[(data.p12Edad<40.) 
                     & (data.Distancia < 7000) 
                     & (data.N_bicicletas > 0) 

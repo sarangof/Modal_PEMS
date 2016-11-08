@@ -188,7 +188,7 @@ def update_file(file_id, title, description, filename):
     return None
 
 def insert_new(nombre,parent_id,title,description,filename):
-    if check_duplicate_files(nombre,parent_id)==False:
+    if check_duplicate_files(nombre,parent_id)[0]==False:
         folder_id = insert_folder(parent_id,nombre)    
         sample_id = insert_file(title, description, folder_id, 'Files/'+filename) 
     else:
