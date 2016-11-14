@@ -115,7 +115,7 @@ def check_duplicate_files(file_name,folder_id):
     duplicate = False
     new_folder_id = None
     service = get_service('v2')
-    query = str("'"+folder_id+"' in parents")
+    query = str("'"+folder_id+"' in parents and trashed = false")
     for files in service.files().list(q=query).execute()['items']:
         if files['title'].encode('utf-8') == file_name.encode('utf-8'):
             duplicate=True
@@ -126,7 +126,7 @@ def check_duplicate_files(file_name,folder_id):
 def find_parent_id(file_name):
     folder_id = ''
     service = get_service('v2')
-    for files in service.files().list().execute()['items']:
+    for files in service.files().list(q="trashed = false").execute()['items']:
         if files['title'].encode('utf-8') == file_name.encode('utf-8'):
             folder_id = files['id']
             break
@@ -135,7 +135,7 @@ def find_parent_id(file_name):
 def load_file(file_id):
     service = get_service('v2')
     #service.files().list(q="name contains 'cedulas-Buena-Nota'").execute()
-    for files in service.files().list().execute()['items']:
+    for files in service.files().list(q="trashed = false").execute()['items']:
         if files['id'] == file_id:
             imp = files
             break          
@@ -195,5 +195,8 @@ def insert_new(nombre,parent_id,title,description,filename):
         folder_id = find_parent_id(nombre)
         sample_id = insert_file(title, description, folder_id,  'Files/'+filename)   
     return folder_id, sample_id
+    
+    
+
     
 # NECESITO METODO PARA BORRAR CARPETAS PREVIAS

@@ -173,9 +173,7 @@ def create_db(long_submission,short_submission,sample_id,name):
     folder_id = find_parent_id(name)
     if check_duplicate_files('cedulas-'+name+'.csv',folder_id)[0]==True:
         data_long = pd.DataFrame([]).from_dict(submission_to_dict(long_submission))
-        # Next two lines are temporary.
         data_short = pd.DataFrame([]).from_dict(submission_to_dict(short_submission))                 
-        
         data = pd.concat([data_short,data_long])
         data = data.set_index(u'p8 2. Número de cédula') 
         
@@ -217,7 +215,7 @@ def create_db(long_submission,short_submission,sample_id,name):
             description = 'Detalles sobre el muestreo.'
         insert_file('Detalles-muestreo', description, folder_id,'Detalles-muestreo.csv')  
         
-        return data        
+        return data, folder_id        
     else:
         with open(filename, "w") as text_file:
             text_file.write('No hay muestra generada para esta empresa')
