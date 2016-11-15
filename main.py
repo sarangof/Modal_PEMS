@@ -12,7 +12,7 @@ import filecmp
 from shutil import copyfile
 from sampling import generar_muestra
 from generar_bdd import create_db
-from generar_visualizaciones import vis_answers
+from generar_visualizaciones import vis_answers, quitar_caracteres_especiales
 from drive_functions import find_parent_id
 from generar_grupos import *
 import unicodedata
@@ -109,13 +109,9 @@ if new_submission:
         short_submission = jotformAPIClient.get_form_submissions('63025286426152')  # change survey ID
         # Generar para largo y para corto
         data, folder_id = create_db(long_submission,short_submission,sample_id,name=nombre_empresa) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa
-        #cols_complete, data = quitar_caracteres_especiales(data)
         vis_answers(data,nombre_empresa,parent_id = folder_id) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa/visualizaciones
-       
-        #data = calcular_puntajes(data)                    
-        #data = asignar_grupos(data)
-        # OJO: NUEVAS COLUMNAS
-        #data.columns = cols_complete
+        data = calcular_puntajes(data)                    
+        grupos = asignar_grupos(data,folder_id)
     
     """
     Third request form:
