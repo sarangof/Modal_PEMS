@@ -6,6 +6,7 @@ Created on Tue Sep 27 15:26:47 2016
 @author: saf537
 """
 from drive_functions import insert_file, insert_folder
+from cartodb import CartoDBAPIKey, CartoDBException,FileImport
     
 def quitar_espacios(data):
     cols_complete = data.columns
@@ -18,15 +19,27 @@ def calcular_puntajes(data):
     """
     Aqui se implementan las "funciones" de probabilidad de usar cada uno de los modos.
     """    
-    cols = ['p12Edad','Pendiente','Distancia','p8016_Salario_mensual']
+    cols = ['p12 Edad','Pendiente','Distancia','p80 16. Salario (mensual)']
     df = data[cols] #'18. Salario'
     df= 1./df
     df -= df.min() 
     df /= df.max()  
     data['Puntaje_bici'] = df.sum(axis=1)/len(df.columns)
     return data
+    
+def insertar_mapa(file_name,grupo,group_folder_id):
+        carto_username = 'saf537'
+        carto_key =  '17179e6a8fc54fe03857e65f1d562caf98a8d4bb'    
+        cl = CartoDBAPIKey(carto_key, carto_username)  
+        grupo[['Emisiones','Latitude','Longitude']].to_excel('grupos/'+file_name+'.xlsx',index=False) 
+        insert_file(file_name+'.csv',' ',group_folder_id, 'grupos/'+file_name+'.xlsx',mimetype='text/csv') 
+        fi = FileImport('grupos/'+file_name+'.xlsx', cl, privacy='public',content_guessing='true',create_vis='true')
+        fi.run()
 
-def asignar_grupos(data, folder_id):
+def asignar_grupos(data, folder_id,nombre_empresa):
+        
+  
+    
     group_folder_id = insert_folder(folder_id,'Grupos')
     grupo_bici_1 = data[(data['p12 Edad']<40.) 
                     & (data['Distancia'] < 7000) 
@@ -36,8 +49,10 @@ def asignar_grupos(data, folder_id):
                     & (data[u'p67 32. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para ir al trabajo?'] != 'Bicicleta')
                     & (data[u'p68 33. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para regresar del trabajo?'] != 'Bicicleta')
                     ]
-    grupo_bici_1.to_csv('grupos/grupo_bici_1.csv') 
-    insert_file('grupo_bici_1.csv',' ',group_folder_id, 'grupos/grupo_bici_1.csv',mimetype='text/csv') 
+                    
+    if len(grupo_bici_1) > 0:
+        file_name = nombre_empresa+'-grupo_bici_1'
+        insertar_mapa(file_name,grupo_bici_1,group_folder_id)
 
     grupo_bici_2 = data[
                     (data[u'p180 41. \xbfEst\xe1 considerando utilizar un modo de transporte diferente al que ya utiliza?'] == 'Sí'.encode('utf-8'))
@@ -45,9 +60,10 @@ def asignar_grupos(data, folder_id):
                     & (data[u'p67 32. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para ir al trabajo?'] != 'Bicicleta')
                     & (data[u'p68 33. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para regresar del trabajo?'] != 'Bicicleta')
                     ]
-    grupo_bici_2.to_csv('grupos/grupo_bici_2.csv') 
-    insert_file('grupo_bici_2.csv',' ',group_folder_id, 'grupos/grupo_bici_2.csv',mimetype='text/csv') 
-        
+    if len(grupo_bici_2) > 0:
+        file_name = nombre_empresa+'-grupo_bici_2'
+        insertar_mapa(file_name,grupo_bici_2,group_folder_id)
+            
     grupo_bici_3 = data[(data['p12 Edad']<40.) 
                     & (data['Distancia'] < 7000) 
                     & (data[u'p15 29. \xbfDe cu\xe1ntos veh\xedculos disponen en su hogar?. Bicicletas'] > 0) 
@@ -59,18 +75,22 @@ def asignar_grupos(data, folder_id):
                     & (data[u'p180 41. \xbfEst\xe1 considerando utilizar un modo de transporte diferente al que ya utiliza?'] == 'Sí'.encode('utf-8'))
                     & (data[u'p165 42. Si respondi\xf3 "S\xed" en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Bicicleta')   
                     ]
-    grupo_bici_3.to_csv('grupos/grupo_bici_3.csv') 
-    insert_file('grupo_bici_3.csv',' ',group_folder_id, 'grupos/grupo_bici_3.csv',mimetype='text/csv') 
-    
+                    
+    if len(grupo_bici_3) > 0:
+        file_name = nombre_empresa+'-grupo_bici_3'
+        insertar_mapa(file_name,grupo_bici_3,group_folder_id)
+        
     grupo_bici_4 = data[
                     (data[u'p145 55. Si su empresa ofrecer\xeda siguientes incentivos \xbfusted estar\xeda dispuesto a usar la bicicleta (o usarla con m\xe1s frecuencia)?. Biciletas p\xfablicas'] == 'Sí'.encode('utf-8'))
                     & (data[u'p145 55. Si su empresa ofrecer\xeda siguientes incentivos \xbfusted estar\xeda dispuesto a usar la bicicleta (o usarla con m\xe1s frecuencia)?. D\xeda libre en la semana'] == 'Sí'.encode('utf-8'))
                     & (data[u'p145 55. Si su empresa ofrecer\xeda siguientes incentivos \xbfusted estar\xeda dispuesto a usar la bicicleta (o usarla con m\xe1s frecuencia)?. Duchas y biciparqueaderos'] == 'Sí'.encode('utf-8'))
                     & (data[u'p145 55. Si su empresa ofrecer\xeda siguientes incentivos \xbfusted estar\xeda dispuesto a usar la bicicleta (o usarla con m\xe1s frecuencia)?. incentivos monetarios'] == 'Sí'.encode('utf-8'))
                     ]
-    grupo_bici_3.to_csv('grupos/grupo_bici_4.csv') 
-    insert_file('grupo_bici_4.csv',' ',group_folder_id, 'grupos/grupo_bici_4.csv',mimetype='text/csv')
-    
+                    
+    if len(grupo_bici_4) > 0:
+        file_name = nombre_empresa+'-grupo_bici_4'
+        insertar_mapa(file_name,grupo_bici_4,group_folder_id)
+        
     grupo_tp_1 = data[
                     (data[u'p67 32. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para ir al trabajo?'] != 'Bus/Buseta/Microbus/Bus intermunicipal')
                     & (data[u'p67 32. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para ir al trabajo?'] != 'Metro/Metroplus/Integrados/Tranvia/Ruta con tarifa integrada')
@@ -90,10 +110,10 @@ def asignar_grupos(data, folder_id):
                     # Hora de entrada al trabajo
                     # Hora de salida al trabajo
                     ]
-                    
-    grupo_tp_1.to_csv('grupos/grupo_tp_1.csv') 
-    insert_file('grupo_tp_1.csv',' ',group_folder_id, 'grupos/grupo_tp_1.csv',mimetype='text/csv')
-    
+    if len(grupo_tp_1) > 0:
+        file_name = nombre_empresa+'-grupo_tp_1'
+        insertar_mapa(file_name,grupo_tp_1,group_folder_id)       
+        
     grupo_tp_2 = data[
                     (data[u'p67 32. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para ir al trabajo?'] != 'Bus/Buseta/Microbus/Bus intermunicipal')
                     & (data[u'p67 32. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para ir al trabajo?'] != 'Metro/Metroplus/Integrados/Tranvia/Ruta con tarifa integrada')
@@ -113,10 +133,10 @@ def asignar_grupos(data, folder_id):
                     # Hora de entrada al trabajo
                     # Hora de salida al trabajo
                     ]
-                    
-    grupo_tp_2.to_csv('grupos/grupo_tp_2.csv') 
-    insert_file('grupo_tp_2.csv',' ',group_folder_id, 'grupos/grupo_tp_2.csv',mimetype='text/csv')
-    
+    if len(grupo_tp_2) > 0:
+        file_name = nombre_empresa+'-grupo_tp_2'
+        insertar_mapa(file_name,grupo_tp_2,group_folder_id)   
+        
     grupo_tp_3 = data[
                     (data[u'p67 32. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para ir al trabajo?'] != 'Bus/Buseta/Microbus/Bus intermunicipal')
                     & (data[u'p67 32. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para ir al trabajo?'] != 'Metro/Metroplus/Integrados/Tranvia/Ruta con tarifa integrada')
@@ -137,8 +157,9 @@ def asignar_grupos(data, folder_id):
                     # Hora de salida al trabajo
                     ]
                     
-    grupo_tp_3.to_csv('grupos/grupo_tp_3.csv') 
-    insert_file('grupo_tp_3.csv',' ',group_folder_id, 'grupos/grupo_tp_3.csv',mimetype='text/csv')
+    if len(grupo_tp_3) > 0:
+        file_name = nombre_empresa+'-grupo_tp_3'
+        insertar_mapa(file_name,grupo_tp_3,group_folder_id) 
     
     grupo_tp_4 = data[
                 (data[u'p67 32. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para ir al trabajo?'] != 'Bus/Buseta/Microbus/Bus intermunicipal')
@@ -159,40 +180,45 @@ def asignar_grupos(data, folder_id):
                 # Hora de entrada al trabajo
                 # Hora de salida al trabajo
                 ]
+    if len(grupo_tp_4) > 0:
+        file_name = nombre_empresa+'-grupo_tp_4'
+        insertar_mapa(file_name,grupo_tp_4,group_folder_id) 
                     
-    grupo_tp_4.to_csv('grupos/grupo_tp_4.csv') 
-    insert_file('grupo_tp_4.csv',' ',group_folder_id, 'grupos/grupo_tp_4.csv',mimetype='text/csv')
-    
     grupo_peaton_1 = data
-    grupo_peaton_1.to_csv('grupos/grupo_peaton_1.csv') 
-    insert_file('grupo_peaton_1.csv',' ',group_folder_id, 'grupos/grupo_peaton_1.csv',mimetype='text/csv')
+    if len(grupo_peaton_1) > 0:
+        file_name = nombre_empresa+'-grupo_peaton_1'
+        insertar_mapa(file_name,grupo_peaton_1,group_folder_id) 
     
     grupo_peaton_2 = data
-    grupo_peaton_2.to_csv('grupos/grupo_peaton_2.csv') 
-    insert_file('grupo_peaton_2.csv',' ',group_folder_id, 'grupos/grupo_peaton_2.csv',mimetype='text/csv')
+    if len(grupo_peaton_2) > 0:
+        file_name = nombre_empresa+'-grupo_peaton_2'
+        insertar_mapa(file_name,grupo_peaton_2,group_folder_id) 
     
     grupo_peaton_3 = data
-    grupo_peaton_3.to_csv('grupos/grupo_peaton_3.csv') 
-    insert_file('grupo_peaton_3.csv',' ',group_folder_id, 'grupos/grupo_peaton_3.csv',mimetype='text/csv')
-    
+    if len(grupo_peaton_3) > 0:
+        file_name = nombre_empresa+'-grupo_peaton_3'
+        insertar_mapa(file_name,grupo_peaton_3,group_folder_id) 
+        
     grupo_cc_1 = data[((data[u'p75 52. Si usted NO va en carro ni moto para ir al trabajo (ni comparte carro desde ya) \xbfestar\xeda dispuesto a hacer parte de rutas de carro compartido, a cambio de aportar colectivamente para gasolina/parqueo?'] == 'Sí'.encode('utf-8'))
                         | (data[u'p75 52. Si usted NO va en carro ni moto para ir al trabajo (ni comparte carro desde ya) \xbfestar\xeda dispuesto a hacer parte de rutas de carro compartido, a cambio de aportar colectivamente para gasolina/parqueo?'] == 'Tendría que saber más'.encode('utf-8')))]
-    grupo_cc_1.to_csv('grupos/grupo_cc_1.csv') 
-    insert_file('grupo_cc_1.csv',' ',group_folder_id, 'grupos/grupo_cc_1.csv',mimetype='text/csv')    
+    if len(grupo_cc_1) > 0:
+        file_name = nombre_empresa+'-grupo_cc_1'
+        insertar_mapa(file_name,grupo_cc_1,group_folder_id)    
     
     grupo_cc_2 = data[(data[u'p74 \xbfPodr\xeda y estar\xeda dispuesto a recoger personas en su carro de acuerdo a una ruta compartida?']=='Si')
                         | (data[u'p74 \xbfPodr\xeda y estar\xeda dispuesto a recoger personas en su carro de acuerdo a una ruta compartida?']=='Sí'.encode('utf-8'))]
-    grupo_cc_2.to_csv('grupos/grupo_cc_2.csv') 
-    insert_file('grupo_cc_2.csv',' ',group_folder_id, 'grupos/grupo_cc_2.csv',mimetype='text/csv')    
-    
+    if len(grupo_cc_2) > 0:
+        file_name = nombre_empresa+'-grupo_cc_2'
+        insertar_mapa(file_name,grupo_cc_2,group_folder_id) 
+        
     grupo_hf = data
-    grupo_hf.to_csv('grupos/grupo_hf.csv') 
-    insert_file('grupo_hf.csv',' ',group_folder_id, 'grupos/grupo_hf.csv',mimetype='text/csv') 
+    if len(grupo_hf) > 0:
+        file_name = nombre_empresa+'-grupo_hf'
+        insertar_mapa(file_name,grupo_hf,group_folder_id) 
     
     grupo_teletrabajo = data[data[u'p32 44. Teletrabajo']=='Sí'.encode('utf-8')]
-    grupo_teletrabajo.to_csv('grupos/grupo_teletrabajo.csv') 
-    insert_file('grupo_teletrabajo.csv',' ',group_folder_id, 'grupos/grupo_teletrabajo.csv',mimetype='text/csv')     
-    
-    
-    return None
+    if len(grupo_teletrabajo) > 0:
+        file_name = nombre_empresa+'-grupo_teletrabajo'
+        insertar_mapa(file_name,grupo_teletrabajo,group_folder_id) 
+        
 
