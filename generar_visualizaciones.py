@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from drive_functions import insert_file,insert_folder
 
+
+
 import re
 import unicodedata
 import sys
@@ -14,7 +16,6 @@ import sys
 #sns.set(rc={'axes.facecolor':'white'})
 # Turn interactive plotting off
 plt.ioff()
-
 
 def quitar_caracteres_especiales(cols):
     """
@@ -116,11 +117,11 @@ def min_dist_inside(point, rotation, box):
 
 
 
-def vis_answers(data,name,parent_id):
+def vis_answers(df,parent_id,folder_name):
 
-    folder_id = insert_folder(parent_id,'Visualizaciones')
-    for cols in data.columns:         
-        if len(data[cols].dropna()) > 0:
+    folder_id = insert_folder(parent_id,folder_name)
+    for cols in df.columns:         
+        if len(df[cols].dropna()) > 0:
             cols_n = cols
     
             if len(cols_n):
@@ -135,8 +136,8 @@ def vis_answers(data,name,parent_id):
                 try:
                     fig = plt.figure()
                     plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
-                    ax = data[cols].dropna().plot(kind='box')
-                    quantile = data[cols].quantile(.95)
+                    ax = df[cols].dropna().plot(kind='box')
+                    quantile = df[cols].quantile(.95)
                     fig.canvas.mpl_connect('draw_event', on_draw)
                     plt.title(cols)
                     plt.tight_layout()
@@ -159,12 +160,72 @@ def vis_answers(data,name,parent_id):
                 """
                 Otherwise try a bar plot.
                 """
-                fig = plt.figure()
-                plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
-                data[cols].value_counts().sort().plot(kind='bar')
-                fig.canvas.mpl_connect('draw_event', on_draw)
+                try:    
+                    fig = plt.figure()
+                    plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
+                    df[cols].value_counts().sort_index().plot(kind='hist',bins=10)
+                    fig.canvas.mpl_connect('draw_event', on_draw)
+                    
+                    plt.title(cols)
+                    plt.tight_layout()
+                    plt.savefig('data_viz/'+figure_name)  
+                    insert_file(figure_name,' ',folder_id, 'data_viz/'+figure_name,mimetype='image/png')                     
+                except ValueError:
+                    fig = plt.figure()
+                    plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
+                    df[cols].value_counts().sort_index().plot(kind='bar')
+                    fig.canvas.mpl_connect('draw_event', on_draw)
+                    
+                    plt.title(cols)
+                    plt.tight_layout()
+                    plt.savefig('data_viz/'+figure_name)  
+                    insert_file(figure_name,' ',folder_id, 'data_viz/'+figure_name,mimetype='image/png') 
+
                 
-                plt.title(cols)
-                plt.tight_layout()
-                plt.savefig('data_viz/'+figure_name)  
-                insert_file(figure_name,' ',folder_id, 'data_viz/'+figure_name,mimetype='image/png') 
+def crear_compendios(data,nombre_empresa,folder_id):
+    """
+    Crear sumarios de agrupaciones que tienen sentido.
+    Guardar las tablas.
+    Crear graficas.
+    * folder_id = ID de carpeta donde se alojan los resumenes en cuestion.
+    * data = data frame principal.
+    * nombre_empresa.
+    """    
+    resumen_folder_id = insert_folder(folder_id,'Tablas')
+    
+    agg_1 = data.groupby([u'p68 33. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para regresar del trabajo?'])
+    agg_1 = agg_1.mean().dropna(axis=1).apply(pd.to_numeric)
+    agg_1.to_csv('Files/Modo_regreso.csv')
+    resumen_folder_id_1 = insert_folder(resumen_folder_id,'Modo de regreso')
+    insert_file('Modo_regreso.csv',' ',resumen_folder_id_1, 'Files/Modo_regreso.csv',mimetype='text/csv') 
+    vis_compendios(agg_1,resumen_folder_id_1,'Modo regreso. ')
+    
+    #vis_answers(agg_1,resumen_folder_id,'Ida al trabajo')
+    agg_2 = data.groupby([u'p67 32. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para ir al trabajo?'])
+    agg_2 = agg_2.mean().dropna(axis=1).apply(pd.to_numeric)
+    agg_2.to_csv('Files/Modo_ida.csv')
+    resumen_folder_id_2 = insert_folder(resumen_folder_id,'Modo de ida')
+    insert_file('Files/Modo_ida.csv',' ',resumen_folder_id_2, 'Files/Modo_ida.csv',mimetype='text/csv') 
+    vis_compendios(agg_2,resumen_folder_id_2,'Modo ida. ')
+    
+    agg_3 = data.groupby( [u'p22 5. \xbfEn qu\xe9 municipio vive?'])
+    agg_3 = agg_3.mean().dropna(axis=1).apply(pd.to_numeric)
+    agg_3.to_csv('Files/Municipio.csv')
+    resumen_folder_id_3 = insert_folder(resumen_folder_id,'Municipio')
+    insert_file('Files/Municipio.csv',' ',resumen_folder_id_3, 'Files/Municipio.csv',mimetype='text/csv')     
+    vis_compendios(agg_3,resumen_folder_id_3,'Municipio. ')
+
+def vis_compendios(df,resumen_folder_id,aggregation_name):
+    for cols in df:
+        if len(cols):
+            cols = cols[:150]
+        figure_name = aggregation_name + str(quitar_caracteres_especiales(cols))+'.png'
+        fig = plt.figure()
+        plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
+        df[cols].plot(kind='bar')
+        fig.canvas.mpl_connect('draw_event', on_draw)
+        
+        plt.title(cols)
+        plt.tight_layout()
+        plt.savefig('data_viz/'+figure_name)  
+        insert_file(figure_name,' ',resumen_folder_id, 'data_viz/'+figure_name,mimetype='image/png') 
