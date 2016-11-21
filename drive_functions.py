@@ -104,7 +104,7 @@ def insert_folder(parent_id,folder_name):
     if duplicate_folder==False:
         created_folder = service.files().create(body=file_metadata,
                                             fields='id').execute()
-        new_folder_id = str(created_folder['id'])
+        new_folder_id = str(created_folder['id'])    
     return new_folder_id
     # Manage error
     
@@ -123,14 +123,20 @@ def check_duplicate_files(file_name,folder_id):
             break
     return duplicate,new_folder_id
     
-def find_parent_id(file_name):
-    folder_id = ''
+def find_file_id(file_name):
+    """
+    Find id of the file or folder with the given name.
+    * file_name
+    """
+    file_id = ''
+    parent_id = ''
     service = get_service('v2')
     for files in service.files().list(q="trashed = false").execute()['items']:
         if files['title'].encode('utf-8') == file_name.encode('utf-8'):
-            folder_id = files['id']
+            file_id = str(files['id'])
+            parent_id = str(files['parents'][0]['id'])
             break
-    return folder_id
+    return file_id,parent_id
     
 def load_file(file_id):
     service = get_service('v2')
@@ -148,8 +154,8 @@ def load_file(file_id):
     
 
 def update_file(file_id, title, description, filename):
-  """Update an existing file's metadata and content.
-
+  """
+  Update an existing file's metadata and content.
   Args:
     service: Drive API service instance.
     file_id: ID of the file to update.
@@ -182,21 +188,17 @@ def update_file(file_id, title, description, filename):
         fileId=file_id,
         body=file,
         media_body=media_body).execute()
-    return updated_file
   except errors.HttpError, error:
     print('An error occurred: %s' % error)
-    return None
 
-def insert_new(nombre,parent_id,title,description,filename):
+def insert_new(nombre, parent_id, title, description, filename):
+    """
+    Insert new file if it does not exist, or 
+    """
     if check_duplicate_files(nombre,parent_id)[0]==False:
         folder_id = insert_folder(parent_id,nombre)    
-        sample_id = insert_file(title, description, folder_id, 'Files/'+filename) 
+        file_id   = insert_file(title, description, folder_id, 'Files/'+filename) 
     else:
-        folder_id = find_parent_id(nombre)
-        sample_id = insert_file(title, description, folder_id,  'Files/'+filename)   
-    return folder_id, sample_id
-    
-    
-
-    
-# NECESITO METODO PARA BORRAR CARPETAS PREVIAS
+        file_id, parent_id = find_file_id(filename)     
+        update_file(file_id, title, description, 'Files/'+filename)#insert_file(title, description, folder_id,  'Files/'+filename) 
+    return folder_id, file_id
