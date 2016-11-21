@@ -3,7 +3,7 @@
 
 import pandas as pd
 from  datetime import datetime
-from drive_functions import insert_file,check_duplicate_files, find_parent_id, load_file, update_file
+from drive_functions import insert_file,check_duplicate_files, find_file_id, load_file, update_file
 import requests
 import json
 import re
@@ -21,7 +21,6 @@ def create_keys(dct,indexer,content):
     else:
         dct[indexer] = [content]
     return dct
-    
 
 """
 for k in answer.keys():
@@ -34,6 +33,9 @@ dct[indexer] = [content]
 """
 
 def fill_empty_answer(answer):
+    """
+    Fills a non answer field when given a blank answer.
+    """
     content = None
     if answer == unicode('') or answer == [unicode('')]:
         content = np.nan
@@ -78,7 +80,7 @@ def submission_to_dict(submission,googleKey=googleKey):
                         if d['status']=='OK':
                             lon,lat = d['results'][0]['geometry']['location']['lng'],d['results'][0]['geometry']['location']['lat']
                         else:
-                            lon,lat = 'NA','NA'
+                            lon,lat = np.nan,np.nan
                         content = (lon,lat)
                 elif tp in ['control_dropdown','control_textbox','control_spinner','control_scale','control_number','control_radio']:
                     if content == None:
@@ -145,7 +147,7 @@ def update_main_db(data,folder_id):
             '0B3D2VjgtkabkSVh4d0I2RzZ0LWc', 'BDD_PEMS_agregada.csv') 
             
 
-def create_db(long_submission,short_submission,sample_id,name):
+def create_db(long_submission,short_submission,sample_id,folder_id,name):
     """
     Creates a pandas data frame that includes both surveys and exports it to Google Drive.
     """
@@ -170,7 +172,6 @@ def create_db(long_submission,short_submission,sample_id,name):
     sample_list = load_file(sample_id)
     filename = str(name)+'.csv'
     title, description = filename, 'BDD '+str(name)+'.'
-    folder_id = find_parent_id(name)
     if check_duplicate_files('cedulas-'+name+'.csv',folder_id)[0]==True:
         data_long = pd.DataFrame([]).from_dict(submission_to_dict(long_submission))
         data_short = pd.DataFrame([]).from_dict(submission_to_dict(short_submission))                 
@@ -200,6 +201,9 @@ def create_db(long_submission,short_submission,sample_id,name):
                 distance_list.append(np.nan)
         data['Pendiente'] = elevation_list
         data['Distancia'] = distance_list
+        data['Latitude'] = [lat for lon,lat in data[u'p9 6. Direcci\xf3n']]
+        data['Longitude']  = [lon for lon,lat in data[u'p9 6. Direcci\xf3n']]
+        
         emissions_list = [emissions_mode[unicode(element)] for element in data[u'p68 33. ¿Cuál es su medio habitual (más frecuente y que utiliza por más tiempo en cada viaje) para regresar del trabajo?']]
         data['Emisiones'] = emissions_list*data.Distancia
        # Create DB file and insert it to Drive                 

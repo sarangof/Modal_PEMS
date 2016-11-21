@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
+from numpy import mean
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from drive_functions import insert_file,insert_folder
-
-
+import geopandas as gp
+from shapely.geometry import Point
+from mpl_toolkits.basemap import Basemap
 
 import re
 import unicodedata
@@ -171,15 +173,19 @@ def vis_answers(df,parent_id,folder_name):
                     plt.savefig('data_viz/'+figure_name)  
                     insert_file(figure_name,' ',folder_id, 'data_viz/'+figure_name,mimetype='image/png')                     
                 except ValueError:
-                    fig = plt.figure()
-                    plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
-                    df[cols].value_counts().sort_index().plot(kind='bar')
-                    fig.canvas.mpl_connect('draw_event', on_draw)
-                    
-                    plt.title(cols)
-                    plt.tight_layout()
-                    plt.savefig('data_viz/'+figure_name)  
-                    insert_file(figure_name,' ',folder_id, 'data_viz/'+figure_name,mimetype='image/png') 
+                    try:
+                        fig = plt.figure()
+                        plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
+                        df[cols].value_counts().sort_index().plot(kind='bar')
+                        fig.canvas.mpl_connect('draw_event', on_draw)
+                        
+                        plt.title(cols)
+                        plt.tight_layout()
+                        plt.savefig('data_viz/'+figure_name)  
+                        insert_file(figure_name,' ',folder_id, 'data_viz/'+figure_name,mimetype='image/png') 
+                        
+                    except ValueError:
+                        pass
 
                 
 def crear_compendios(data,nombre_empresa,folder_id):
@@ -205,14 +211,14 @@ def crear_compendios(data,nombre_empresa,folder_id):
     agg_2 = agg_2.mean().dropna(axis=1).apply(pd.to_numeric)
     agg_2.to_csv('Files/Modo_ida.csv')
     resumen_folder_id_2 = insert_folder(resumen_folder_id,'Modo de ida')
-    insert_file('Files/Modo_ida.csv',' ',resumen_folder_id_2, 'Files/Modo_ida.csv',mimetype='text/csv') 
+    insert_file('Modo_ida.csv',' ',resumen_folder_id_2, 'Files/Modo_ida.csv',mimetype='text/csv') 
     vis_compendios(agg_2,resumen_folder_id_2,'Modo ida. ')
     
     agg_3 = data.groupby( [u'p22 5. \xbfEn qu\xe9 municipio vive?'])
     agg_3 = agg_3.mean().dropna(axis=1).apply(pd.to_numeric)
     agg_3.to_csv('Files/Municipio.csv')
     resumen_folder_id_3 = insert_folder(resumen_folder_id,'Municipio')
-    insert_file('Files/Municipio.csv',' ',resumen_folder_id_3, 'Files/Municipio.csv',mimetype='text/csv')     
+    insert_file('Municipio.csv',' ',resumen_folder_id_3, 'Files/Municipio.csv',mimetype='text/csv')     
     vis_compendios(agg_3,resumen_folder_id_3,'Municipio. ')
 
 def vis_compendios(df,resumen_folder_id,aggregation_name):
@@ -229,3 +235,26 @@ def vis_compendios(df,resumen_folder_id,aggregation_name):
         plt.tight_layout()
         plt.savefig('data_viz/'+figure_name)  
         insert_file(figure_name,' ',resumen_folder_id, 'data_viz/'+figure_name,mimetype='image/png') 
+        
+def plot_dataframe(data):
+    
+    data_plot = data.dropna(subset=[['Longitude','Latitude']])
+    #geometry = [Point(xy) for xy in zip(data_plot.Longitude, data_plot.Latitude)]
+    #crs = None
+    #geo_df = gp.GeoDataFrame(data_plot, crs=crs, geometry=geometry)
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+    mm = Basemap(
+        ellps='WGS84',
+        llcrnrlon = data_plot.Longitude.min(), # lower-left corner longitude
+        llcrnrlat = data_plot.Latitude.min(), # lower-left corner latitude
+        urcrnrlon = data_plot.Longitude.max(), # upper-right corner longitude
+        urcrnrlat = data_plot.Latitude.max()#, # upper-right corner latitude
+        #resolution='f'
+    )
+    mm.warpimage(scale=4)
+    #mm.etopo()
+    x, y = mm(data_plot.Longitude,data_plot.Latitude) # Translate lat/lon to basemap coordinates
+    color = '#0080FF'
+    mm.scatter(x,y, marker='o')
+    plt.show()

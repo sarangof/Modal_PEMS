@@ -56,7 +56,8 @@ def get_service(version):
     return service
 
 def insert_file(title, description, parent_id, filename, mimetype = 'text/csv'):
-  """Insert new file.
+  """
+  Insert new file.
 
   Args:
     title: Title of the file to insert, including the extension.
@@ -66,30 +67,34 @@ def insert_file(title, description, parent_id, filename, mimetype = 'text/csv'):
     filename: Filename of the file to insert.
   Returns:
     Inserted file metadata if successful, None otherwise.
+    
   """
   service = get_service('v2')
-  media_body = MediaFileUpload(filename, mimetype, resumable=True)
-  body = {
-    'title': title,
-    'description': description,
-    'mimeType': mimetype
-  }
-  # Set the parent folder.
-  body['parents'] = [{'id': parent_id}]
+  duplicate, file_id = check_duplicate_files(title, parent_id)
+  if duplicate == False:
+      try:
+          media_body = MediaFileUpload(filename, mimetype, resumable=True)
+          body = {
+            'title': title,
+            'description': description,
+            'mimeType': mimetype
+          }
+          # Set the parent folder.
+          body['parents'] = [{'id': parent_id}]
+          file = service.files().insert(
+              body=body,
+              media_body=media_body).execute()
+          file_id = str(file['id'])
+      except errors.HttpError, err:
+          if err.resp.get('content-type', '').startswith('application/json'):
+              reason = json.loads(err.content)['error']
+              print(reason)
+              return None
+  else:   
+      update_file(file_id, title, description, filename)
+  return file_id
 
-  try:
-      file = service.files().insert(
-      body=body,
-      media_body=media_body).execute()
-      return str(file['id'])
-  except errors.HttpError, err:
-      if err.resp.get('content-type', '').startswith('application/json'):
-          reason = json.loads(err.content)['error']
-          print(reason)
-      return None
-    
-
-def insert_folder(parent_id,folder_name):
+def insert_folder(parent_id, folder_name):
     """
     Inserts the folder "folder_name" into the folder with the given "parent_id"
     """
@@ -108,20 +113,20 @@ def insert_folder(parent_id,folder_name):
     return new_folder_id
     # Manage error
     
-def check_duplicate_files(file_name,folder_id):
+def check_duplicate_files(file_name, parent_id):
     """
-    Checks for files with the name "file_name" inside the folder with the given "folder_id".
+    Checks for files with the name "file_name" inside the folder with the given "parent_id".
     """    
     duplicate = False
-    new_folder_id = None
+    file_id = None
     service = get_service('v2')
-    query = str("'"+folder_id+"' in parents and trashed = false")
+    query = str("'"+parent_id+"' in parents and trashed = false")
     for files in service.files().list(q=query).execute()['items']:
         if files['title'].encode('utf-8') == file_name.encode('utf-8'):
             duplicate=True
-            new_folder_id = str(files['id'])
+            file_id = str(files['id'])
             break
-    return duplicate,new_folder_id
+    return duplicate, file_id
     
 def find_file_id(file_name):
     """
@@ -180,13 +185,13 @@ def update_file(file_id, title, description, filename):
     }  
     
     # File's new content.
-    media_body = MediaFileUpload(filename, mimetype='text/csv',body=body, resumable=True)
+    media_body = MediaFileUpload(filename, mimetype='text/csv', resumable=True)
     
 
     # Send the request to the API.
     updated_file = service.files().update(
         fileId=file_id,
-        body=file,
+        body=body, #body=file
         media_body=media_body).execute()
   except errors.HttpError, error:
     print('An error occurred: %s' % error)

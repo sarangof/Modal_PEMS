@@ -6,7 +6,7 @@ import re
 import pandas as pd
 import numpy  as np
 from sklearn.cross_validation import train_test_split
-from drive_functions import insert_new
+from drive_functions import insert_file, insert_folder
 
 def generar_muestra(url_bdd,nombre,n_sample):
     """
@@ -28,6 +28,8 @@ def generar_muestra(url_bdd,nombre,n_sample):
     parent_id = '0B3D2VjgtkabkSVh4d0I2RzZ0LWc' # '0Bz78HNrCokDoc3RQTWYyWk94RG8'
     title = filename
     description = 'Cedulas a encuestar en empresa '+str(nombre)+'.'
-    folder_id,sample_id = insert_new(nombre,parent_id,title,description,filename) 
+    #sample_id = insert_file(nombre,parent_id,title,description,filename) 
+    new_parent = insert_folder(parent_id,nombre)
+    sample_id = insert_file(title, description, new_parent, 'Files/'+filename, mimetype = 'text/csv')
         
-    return sample_id
+    return sample_id, new_parent

@@ -12,8 +12,7 @@ import filecmp
 from shutil import copyfile
 from sampling import generar_muestra
 from generar_bdd import create_db
-from generar_visualizaciones import vis_answers, quitar_caracteres_especiales
-from drive_functions import find_parent_id
+from generar_visualizaciones import vis_answers, crear_compendios
 from generar_grupos import *
 import unicodedata
 import sys
@@ -94,7 +93,7 @@ if new_submission:
             url_bdd        = str(submission[0]['answers'][u'5']['answer'][0])
             nombre_empresa = str(submission[0]['answers'][u'6']['answer'])
             n_sample       = int(submission[0]['answers'][u'7']['answer'])
-        sample_id = generar_muestra(url_bdd,nombre_empresa,n_sample) #sample goes to Drive/Resultados/Muestras de empresas
+        sample_id, folder_id = generar_muestra(url_bdd,nombre_empresa,n_sample) #sample goes to Drive/Resultados/Muestras de empresas
         
     """
     Second request form:
@@ -108,7 +107,7 @@ if new_submission:
         long_submission  = jotformAPIClient.get_form_submissions('62284736240152',limit=2000000)
         short_submission = jotformAPIClient.get_form_submissions('63025286426152')  # change survey ID
         # Generar para largo y para corto
-        data, folder_id = create_db(long_submission,short_submission,sample_id,name=nombre_empresa) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa
+        data, folder_id = create_db(long_submission,short_submission,sample_id,folder_id,name=nombre_empresa) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa
         vis_answers(data,folder_id,folder_name='Visualizaciones') # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa/visualizaciones
         data = calcular_puntajes(data)                    
         grupos = asignar_grupos(data,folder_id,nombre_empresa)
