@@ -7,6 +7,7 @@ Created on Tue Sep 27 15:26:47 2016
 """
 from drive_functions import insert_file, insert_folder
 from cartodb import CartoDBAPIKey, FileImport
+from generar_visualizaciones import plot_map
 import requests
 import json
     
@@ -55,11 +56,11 @@ def insertar_mapa(file_name,grupo,group_folder_id):
         
         
         
-def asignar_grupos(data, folder_id,nombre_empresa):
+def asignar_grupos(data, folder_id, nombre_empresa, viz_folder):
     
     """
     Asigna grupos objetivo segun las respuestas de la encuesta (del dataframe "data").
-    Graba archivos en la carpeta de Drive (folder_id).
+    Graba archivos en la carpeta de Drive correspodiente a "Grupos" (folder_id).
     Utiliza el nombre de la empresa como referencia (nombre_empresa).
     """
     
@@ -75,7 +76,8 @@ def asignar_grupos(data, folder_id,nombre_empresa):
                     
     if len(grupo_bici_1) > 0:
         file_name = nombre_empresa+'-grupo_bici_1'
-        insertar_mapa(file_name,grupo_bici_1,group_folder_id)
+        insertar_mapa(file_name, grupo_bici_1, group_folder_id)
+        plot_map(grupo_bici_1, viz_folder)
 
     grupo_bici_2 = data[
                     (data[u'p180 41. \xbfEst\xe1 considerando utilizar un modo de transporte diferente al que ya utiliza?'] == 'Sí'.encode('utf-8'))
@@ -86,6 +88,7 @@ def asignar_grupos(data, folder_id,nombre_empresa):
     if len(grupo_bici_2) > 0:
         file_name = nombre_empresa+'-grupo_bici_2'
         insertar_mapa(file_name,grupo_bici_2,group_folder_id)
+        plot_map(grupo_bici_2, viz_folder)
             
     grupo_bici_3 = data[(data['p12 Edad']<40.) 
                     & (data['Distancia'] < 7000) 
@@ -102,6 +105,7 @@ def asignar_grupos(data, folder_id,nombre_empresa):
     if len(grupo_bici_3) > 0:
         file_name = nombre_empresa+'-grupo_bici_3'
         insertar_mapa(file_name,grupo_bici_3,group_folder_id)
+        plot_map(grupo_bici_3, viz_folder)
         
     grupo_bici_4 = data[
                     (data[u'p145 55. Si su empresa ofrecer\xeda siguientes incentivos \xbfusted estar\xeda dispuesto a usar la bicicleta (o usarla con m\xe1s frecuencia)?. Biciletas p\xfablicas'] == 'Sí'.encode('utf-8'))
@@ -113,6 +117,7 @@ def asignar_grupos(data, folder_id,nombre_empresa):
     if len(grupo_bici_4) > 0:
         file_name = nombre_empresa+'-grupo_bici_4'
         insertar_mapa(file_name,grupo_bici_4,group_folder_id)
+        plot_map(grupo_bici_4, viz_folder)
         
     grupo_tp_1 = data[
                     (data[u'p67 32. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para ir al trabajo?'] != 'Bus/Buseta/Microbus/Bus intermunicipal')
@@ -135,7 +140,8 @@ def asignar_grupos(data, folder_id,nombre_empresa):
                     ]
     if len(grupo_tp_1) > 0:
         file_name = nombre_empresa+'-grupo_tp_1'
-        insertar_mapa(file_name,grupo_tp_1,group_folder_id)       
+        insertar_mapa(file_name,grupo_tp_1,group_folder_id)  
+        plot_map(grupo_tp_1, viz_folder)
         
     grupo_tp_2 = data[
                     (data[u'p67 32. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para ir al trabajo?'] != 'Bus/Buseta/Microbus/Bus intermunicipal')
@@ -158,7 +164,8 @@ def asignar_grupos(data, folder_id,nombre_empresa):
                     ]
     if len(grupo_tp_2) > 0:
         file_name = nombre_empresa+'-grupo_tp_2'
-        insertar_mapa(file_name,grupo_tp_2,group_folder_id)   
+        insertar_mapa(file_name,grupo_tp_2,group_folder_id) 
+        plot_map(grupo_tp_2, viz_folder)
         
     grupo_tp_3 = data[
                     (data[u'p67 32. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para ir al trabajo?'] != 'Bus/Buseta/Microbus/Bus intermunicipal')
@@ -183,6 +190,7 @@ def asignar_grupos(data, folder_id,nombre_empresa):
     if len(grupo_tp_3) > 0:
         file_name = nombre_empresa+'-grupo_tp_3'
         insertar_mapa(file_name,grupo_tp_3,group_folder_id) 
+        plot_map(grupo_tp_3, viz_folder)
     
     grupo_tp_4 = data[
                 (data[u'p67 32. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para ir al trabajo?'] != 'Bus/Buseta/Microbus/Bus intermunicipal')
@@ -206,46 +214,54 @@ def asignar_grupos(data, folder_id,nombre_empresa):
     if len(grupo_tp_4) > 0:
         file_name = nombre_empresa+'-grupo_tp_4'
         insertar_mapa(file_name,grupo_tp_4,group_folder_id) 
+        plot_map(grupo_tp_4, viz_folder)
                     
 #==============================================================================
 #     grupo_peaton_1 = data
 #     if len(grupo_peaton_1) > 0:
 #         file_name = nombre_empresa+'-grupo_peaton_1'
 #         insertar_mapa(file_name,grupo_peaton_1,group_folder_id) 
+#         plot_map(grupo_peaton_1, viz_folder)
 #     
 #     grupo_peaton_2 = data
 #     if len(grupo_peaton_2) > 0:
 #         file_name = nombre_empresa+'-grupo_peaton_2'
 #         insertar_mapa(file_name,grupo_peaton_2,group_folder_id) 
+#         plot_map(grupo_peaton_2, viz_folder)
 #     
 #     grupo_peaton_3 = data
 #     if len(grupo_peaton_3) > 0:
 #         file_name = nombre_empresa+'-grupo_peaton_3'
 #         insertar_mapa(file_name,grupo_peaton_3,group_folder_id) 
+#         plot_map(grupo_peaton_3, viz_folder)
 #==============================================================================
         
     grupo_cc_1 = data[((data[u'p75 52. Si usted NO va en carro ni moto para ir al trabajo (ni comparte carro desde ya) \xbfestar\xeda dispuesto a hacer parte de rutas de carro compartido, a cambio de aportar colectivamente para gasolina/parqueo?'] == 'Sí'.encode('utf-8'))
                         | (data[u'p75 52. Si usted NO va en carro ni moto para ir al trabajo (ni comparte carro desde ya) \xbfestar\xeda dispuesto a hacer parte de rutas de carro compartido, a cambio de aportar colectivamente para gasolina/parqueo?'] == 'Tendría que saber más'.encode('utf-8')))]
     if len(grupo_cc_1) > 0:
         file_name = nombre_empresa+'-grupo_cc_1'
-        insertar_mapa(file_name,grupo_cc_1,group_folder_id)    
+        insertar_mapa(file_name,grupo_cc_1,group_folder_id) 
+        plot_map(grupo_cc_1, viz_folder)
     
     grupo_cc_2 = data[(data[u'p74 \xbfPodr\xeda y estar\xeda dispuesto a recoger personas en su carro de acuerdo a una ruta compartida?']=='Si')
                         | (data[u'p74 \xbfPodr\xeda y estar\xeda dispuesto a recoger personas en su carro de acuerdo a una ruta compartida?']=='Sí'.encode('utf-8'))]
     if len(grupo_cc_2) > 0:
         file_name = nombre_empresa+'-grupo_cc_2'
         insertar_mapa(file_name,grupo_cc_2,group_folder_id) 
+        plot_map(grupo_cc_2, viz_folder)
 #==============================================================================
 #         
 #     grupo_hf = data
 #     if len(grupo_hf) > 0:
 #         file_name = nombre_empresa+'-grupo_hf'
 #         insertar_mapa(file_name,grupo_hf,group_folder_id) 
+#         plot_map(grupo_hf, viz_folder)
 #==============================================================================
     
     grupo_teletrabajo = data[data[u'p32 44. Teletrabajo']=='Sí'.encode('utf-8')]
     if len(grupo_teletrabajo) > 0:
         file_name = nombre_empresa+'-grupo_teletrabajo'
         insertar_mapa(file_name,grupo_teletrabajo,group_folder_id) 
+        plot_map(grupo_teletrabajo, viz_folder)
         
 

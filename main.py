@@ -94,7 +94,7 @@ if new_submission:
             nombre_empresa = str(submission[0]['answers'][u'6']['answer'])
             n_sample       = int(submission[0]['answers'][u'7']['answer'])
         sample_id, folder_id = generar_muestra(url_bdd,nombre_empresa,n_sample) #sample goes to Drive/Resultados/Muestras de empresas
-        
+        # SAMPLE_ID AND FOLDER_ID NEED TO BE WRITTEN IN LOGS, TOO.
     """
     Second request form:
     Se hizo un request para analizar resultados de una encuesta existente.
@@ -108,9 +108,9 @@ if new_submission:
         short_submission = jotformAPIClient.get_form_submissions('63025286426152')  # change survey ID
         # Generar para largo y para corto
         data, folder_id = create_db(long_submission,short_submission,sample_id,folder_id,name=nombre_empresa) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa
-        vis_answers(data,folder_id,folder_name='Visualizaciones') # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa/visualizaciones
+        viz_folder = vis_answers(data,folder_id,folder_name='Visualizaciones') # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa/visualizaciones
         data = calcular_puntajes(data)                    
-        grupos = asignar_grupos(data,folder_id,nombre_empresa)
+        grupos = asignar_grupos(data,folder_id,nombre_empresa, viz_folder)
         crear_compendios(data,nombre_empresa,folder_id)
     
     """
