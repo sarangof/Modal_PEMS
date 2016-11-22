@@ -2,16 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
-from numpy import mean
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from drive_functions import insert_file,insert_folder
-import geopandas as gp
-from shapely.geometry import Point
-from mpl_toolkits.basemap import Basemap
-import mplleaflet
-import webkit2png
 import smopy
 
 import re
@@ -189,6 +183,7 @@ def vis_answers(df,parent_id,folder_name):
                         
                     except ValueError:
                         pass
+    plot_map(df,folder_id,'')
     return folder_id
 
                 
@@ -206,19 +201,16 @@ def crear_compendios(data,nombre_empresa,folder_id,viz_folder):
     agg_1 = data.groupby([u'p68 33. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para regresar del trabajo?'])
     agg_1 = agg_1.mean().dropna(axis=1).apply(pd.to_numeric)
     agg_1.to_csv('Files/Modo_regreso.csv')
-    resumen_folder_id_1 = insert_folder(resumen_folder_id,'Modo de regreso')
-    insert_file('Modo_regreso.csv',' ',resumen_folder_id_1, 'Files/Modo_regreso.csv',mimetype='text/csv') 
-    vis_compendios(agg_1,resumen_folder_id_1,'Modo regreso. ')
-    plot_map(agg_1,viz_folder)
+    resumen_folder_id_1 = insert_folder(resumen_folder_id, 'Modo de regreso')
+    insert_file('Modo_regreso.csv', ' ', resumen_folder_id_1, 'Files/Modo_regreso.csv', mimetype='text/csv') 
+    vis_compendios(agg_1, resumen_folder_id_1, 'Modo regreso. ')
     
-    #vis_answers(agg_1,resumen_folder_id,'Ida al trabajo')
     agg_2 = data.groupby([u'p67 32. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para ir al trabajo?'])
     agg_2 = agg_2.mean().dropna(axis=1).apply(pd.to_numeric)
     agg_2.to_csv('Files/Modo_ida.csv')
     resumen_folder_id_2 = insert_folder(resumen_folder_id,'Modo de ida')
-    insert_file('Modo_ida.csv',' ',resumen_folder_id_2, 'Files/Modo_ida.csv',mimetype='text/csv') 
+    insert_file('Modo_ida.csv', ' ', resumen_folder_id_2, 'Files/Modo_ida.csv', mimetype='text/csv') 
     vis_compendios(agg_2,resumen_folder_id_2,'Modo ida. ')
-    plot_map(agg_2,viz_folder)
     
     agg_3 = data.groupby( [u'p22 5. \xbfEn qu\xe9 municipio vive?'])
     agg_3 = agg_3.mean().dropna(axis=1).apply(pd.to_numeric)
@@ -226,11 +218,13 @@ def crear_compendios(data,nombre_empresa,folder_id,viz_folder):
     resumen_folder_id_3 = insert_folder(resumen_folder_id,'Municipio')
     insert_file('Municipio.csv',' ',resumen_folder_id_3, 'Files/Municipio.csv',mimetype='text/csv')     
     vis_compendios(agg_3,resumen_folder_id_3,'Municipio. ')
-    plot_map(agg_3,viz_folder)
 
 def vis_compendios(df,resumen_folder_id,aggregation_name):
     """
-    Visualizar resumenes.
+    Visualizar resumenes de diferentes "agregaciones".
+    * DF: Subconjunto del cuerpo de datos [Pandas Data Frame].
+    * resumen_folder: carpeta donde se guardan estos compendios [].
+    * aggregation_name: agregación en concreto.
     """
     for cols in df:
         if len(cols):
@@ -244,20 +238,21 @@ def vis_compendios(df,resumen_folder_id,aggregation_name):
         plt.title(cols)
         plt.tight_layout()
         plt.savefig('data_viz/'+figure_name)  
-        insert_file(figure_name,' ',resumen_folder_id, 'data_viz/'+figure_name,mimetype='image/png') 
+        insert_file(figure_name, ' ', resumen_folder_id, 'data_viz/'+figure_name, mimetype='image/png') 
         
-def plot_map(data,viz_folder,columnas=[None]):
+def plot_map(data,viz_folder,prefijo,columnas=[None]):
     """
     Outputs (and uploads to Google Drive) maps of locations of a given data frame and a 
     subset of columns.
     * Data: entire data frame or subset.
     * viz_folder: destination folder in Google Drive.
     * columnas: subset of columns to plot.
+    * prefijo: importante para nomenclatura.
     """
     if columnas != [None]:
-        l_columnas = columnas.append(None)
+        columnas = columnas.append(None)
         
-    for columna in l_columnas:
+    for columna in columnas:
         if columna == None:
             data_plot = data.dropna(subset=[['Longitude','Latitude']])
         else:
@@ -275,11 +270,15 @@ def plot_map(data,viz_folder,columnas=[None]):
         else:
             ax.scatter(x, y, s=50, c = data_plot[columna]) #mew=0
         #plt.show()
-        viz_name = quitar_caracteres_especiales(str(columna))
+        if columna != None:
+            viz_name = quitar_caracteres_especiales(str(columna))
+        else:
+            viz_name = 'Total' #temporal
+        viz_name = prefijo+' '+viz_name+'.'
         plt.title(viz_name)
         plt.tight_layout()
-        plt.savefig('data_viz/'+viz_name)
-        insert_file(viz_name,' ',viz_folder, 'data_viz/'+viz_name,mimetype='image/png') 
+        plt.savefig('data_viz/'+viz_name+'.png')
+        insert_file(viz_name,' ',viz_folder, 'data_viz/'+viz_name+'.png',mimetype='image/png') 
 
      
     

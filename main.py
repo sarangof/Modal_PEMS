@@ -107,11 +107,11 @@ if new_submission:
         long_submission  = jotformAPIClient.get_form_submissions('62284736240152',limit=2000000)
         short_submission = jotformAPIClient.get_form_submissions('63025286426152')  # change survey ID
         # Generar para largo y para corto
-        data, folder_id = create_db(long_submission,short_submission,sample_id,folder_id,name=nombre_empresa) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa
-        viz_folder = vis_answers(data,folder_id,folder_name='Visualizaciones') # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa/visualizaciones
+        data, folder_id = create_db(long_submission, short_submission, sample_id, folder_id, name=nombre_empresa) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa
+        viz_folder = vis_answers(data, folder_id, folder_name='Visualizaciones') # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa/visualizaciones
         data = calcular_puntajes(data)                    
-        grupos = asignar_grupos(data,folder_id,nombre_empresa, viz_folder)
-        crear_compendios(data,nombre_empresa,folder_id)
+        grupos = asignar_grupos(data, folder_id, nombre_empresa, viz_folder)
+        crear_compendios(data, nombre_empresa, folder_id, viz_folder)
     
     """
     Third request form:
