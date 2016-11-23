@@ -17,3 +17,12 @@ Herramienta para asesorar Planes Estratégicos de Movilidad Sostenible ([PEMS](h
 * Interacción con formularios a través del [Jotform API](http://api.jotform.com/docs/). Conversión de formularios en formato json a formato .csv (para compatibilidad con Excel).
 * Georreferenciación, distancias y topografía gracias al [Google Maps API](https://developers.google.com/maps/).
 * Manejo de archivos y compendio de resultados a través del [Google Drive API] (https://developers.google.com/drive/v2/reference/) (versiones 2 y 3).
+* Creación de mapas "crudos" en Carto DB ([Carto Import API] (https://carto.com/docs/carto-engine/import-api/))
+
+## Paquetes relevantes:
+
+* Pandas
+* Matplotlib
+* Seaborn
+* Smopy
+* Sklearn
