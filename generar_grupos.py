@@ -9,7 +9,6 @@ from drive_functions import insert_file, insert_folder
 from cartodb import CartoDBAPIKey, FileImport
 from generar_visualizaciones import plot_map
 import requests
-import json
     
 def quitar_espacios(data):
     cols_complete = data.columns
@@ -65,6 +64,7 @@ def asignar_grupos(data, folder_id, nombre_empresa, viz_folder):
     """
     
     group_folder_id = insert_folder(folder_id,'Grupos')
+    
     grupo_bici_1 = data[(data['p12 Edad']<40.) 
                     & (data['Distancia'] < 7000) 
                     & (data[u'p15 29. \xbfDe cu\xe1ntos veh\xedculos disponen en su hogar?. Bicicletas'] > 0) 

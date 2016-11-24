@@ -1,4 +1,6 @@
 client_secret.json
+*.ods
+*.xlsx
 *.csv
 *.xls
 *.pyc

@@ -1,13 +1,13 @@
 #!/home/saf537/anaconda2/lib/python2.7/
 # -*- coding: utf-8 -*-
 
+from datetime import datetime
 import pandas as pd
-from  datetime import datetime
-from drive_functions import insert_file,check_duplicate_files, find_file_id, load_file, update_file
 import requests
 import json
 import re
-import numpy as np
+from drive_functions import insert_file,check_duplicate_files, load_file, update_file
+from numpy import nan, array, abs
 
 googleKey = 'AIzaSyBvuKUfCCTNzc8etkAuaU-16uzl3N4f6Vw' # Google Maps API for georeferencing
 
@@ -22,23 +22,13 @@ def create_keys(dct,indexer,content):
         dct[indexer] = [content]
     return dct
 
-"""
-for k in answer.keys():
-content = answer[k]
-indexer = 'p'+str(questions)+'_'+text+str(k)
-if indexer in dct.keys():
-dct[indexer].append(content)
-else:
-dct[indexer] = [content]
-"""
-
 def fill_empty_answer(answer):
     """
     Fills a non answer field when given a blank answer.
     """
     content = None
     if answer == unicode('') or answer == [unicode('')]:
-        content = np.nan
+        content = nan
     return content
 
 def submission_to_dict(submission,googleKey=googleKey):
@@ -58,7 +48,7 @@ def submission_to_dict(submission,googleKey=googleKey):
             except (ValueError, TypeError):
                 answer = replies['answers'][questions]['answer']
             except KeyError:
-                answer = np.nan
+                answer = nan
             try:
                 content = fill_empty_answer(answer)
                 if tp == 'control_matrix':
@@ -80,7 +70,7 @@ def submission_to_dict(submission,googleKey=googleKey):
                         if d['status']=='OK':
                             lon,lat = d['results'][0]['geometry']['location']['lng'],d['results'][0]['geometry']['location']['lat']
                         else:
-                            lon,lat = np.nan,np.nan
+                            lon,lat = nan,nan
                         content = (lon,lat)
                 elif tp in ['control_dropdown','control_textbox','control_spinner','control_scale','control_number','control_radio']:
                     if content == None:
@@ -95,7 +85,7 @@ def submission_to_dict(submission,googleKey=googleKey):
                     if content == None:
                         content = datetime.strptime(answer['hourSelect']+answer['minuteSelect']+answer['ampm'],'%H%M%p')
                 else:
-                    content = np.nan   
+                    content = nan
                 if dict_bool:
                     try:
                         for k in answer.keys():
@@ -108,7 +98,7 @@ def submission_to_dict(submission,googleKey=googleKey):
                         dict_bool = False
                     except AttributeError: # not sure if this is the right error
                         dict_bool = False
-                        content = np.nan
+                        content = nan
                         if 'p'+str(questions)+' '+text in dct.keys():
                             dct['p'+str(questions)+' '+text].append(content)
                         else:
@@ -118,10 +108,6 @@ def submission_to_dict(submission,googleKey=googleKey):
                         dct['p'+str(questions)+' '+text].append(content)
                     else:
                         dct['p'+str(questions)+' '+text] = [content]
-                # HAVE TWO TYPES OF CONTENT: a list and an element   
-                # Use a boolean
-                    
-
             except KeyError:
                 continue
     return dct
@@ -192,13 +178,13 @@ def create_db(long_submission,short_submission,sample_id,folder_id,name):
                 d_dist = json.loads(requests.get(call_dist).content) 
                 if d_topo['status'] == 'OK':
                     ele_dots = [punto['elevation'] for punto in d_topo['results']]
-                    temp_list = np.array(ele_dots+ele_dots[-1:]) -  np.array(ele_dots[:1]+ele_dots) 
-                    elevation_list.append(float(np.abs(temp_list).sum()/4.))
+                    temp_list = array(ele_dots+ele_dots[-1:]) -  array(ele_dots[:1]+ele_dots) 
+                    elevation_list.append(float(abs(temp_list).sum()/4.))
                 if d_dist['status'] == 'OK': 
                     distance_list.append(float(d_dist['rows'][0]['elements'][0]['distance']['value']))
             except (TypeError, KeyError) as e:
-                elevation_list.append(np.nan)
-                distance_list.append(np.nan)
+                elevation_list.append(nan)
+                distance_list.append(nan)
         data['Pendiente'] = elevation_list
         data['Distancia'] = distance_list
         data['Latitude'] = [lat for lon,lat in data[u'p9 6. Direcci\xf3n']]
@@ -206,6 +192,7 @@ def create_db(long_submission,short_submission,sample_id,folder_id,name):
         
         emissions_list = [emissions_mode[unicode(element)] for element in data[u'p68 33. ¿Cuál es su medio habitual (más frecuente y que utiliza por más tiempo en cada viaje) para regresar del trabajo?']]
         data['Emisiones'] = emissions_list*data.Distancia
+        
        # Create DB file and insert it to Drive                 
         data.to_csv(filename)
         update_main_db(data,folder_id)
