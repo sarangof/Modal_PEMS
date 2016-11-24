@@ -12,6 +12,7 @@ import filecmp
 from shutil import copyfile
 from sampling import generar_muestra
 from generar_bdd import create_db
+import pandas as pd
 from generar_visualizaciones import vis_answers, crear_compendios
 from generar_grupos import *
 import unicodedata
@@ -34,7 +35,7 @@ jotformAPIClient = JotformAPIClient(jotFormKey)
 
 def update_submissions():
     """
-    Creates a temporal file to compare with the submissions.
+    Creates a log on the last submission for each of the forms and alerts new submissions.
     """
     n = 1
     bool_dict = {} # Stores truth values to indicate new submissions in any of the forms
@@ -48,7 +49,7 @@ def update_submissions():
                     # OJO
                     text_file.write('NUMERO DE PERSONAS')
         try: 
-        # Case that there is already a log file
+            # Case that there is already a log file
             if filecmp.cmp("logs/temp.txt",log_file_name)  == False:
                 copyfile("logs/temp.txt",log_file_name)            
                 bool_dict["new_form_{0}".format(n)] = True
@@ -56,7 +57,7 @@ def update_submissions():
                 bool_dict["new_form_{0}".format(n)] = False
         
         except OSError:
-        # Case that there were no log files
+            # Case that there were no log files
             bool_dict["new_form_{0}".format(n)] = True
             with open(log_file_name, "w") as text_file:
                 for sub in submission:            
@@ -74,11 +75,16 @@ def return_submission(form_option):
     submission = jotformAPIClient.get_form_submissions(form_option,order_by="created_at")
     submission = submission[0] # last submission
     return submission
+    
+def generar_analisis(data,folder_id, nombre_empresa):
+    viz_folder = vis_answers(data, folder_id, folder_name='Visualizaciones') 
+    data = calcular_puntajes(data)                    
+    asignar_grupos(data, folder_id, nombre_empresa, viz_folder)
+    crear_compendios(data, nombre_empresa, folder_id, viz_folder)
 
 new_submission,new_form_1,new_form_2,new_form_3  = update_submissions()
 
 if new_submission:
-    
     """
     First request form: 
     Se hizo un request para pedir parámetros de una nueva encuesta.
@@ -93,7 +99,8 @@ if new_submission:
             url_bdd        = str(submission[0]['answers'][u'5']['answer'][0])
             nombre_empresa = str(submission[0]['answers'][u'6']['answer'])
             n_sample       = int(submission[0]['answers'][u'7']['answer'])
-        sample_id, folder_id = generar_muestra(url_bdd,nombre_empresa,n_sample) #sample goes to Drive/Resultados/Muestras de empresas
+
+        sample_id, folder_id = generar_muestra(url_bdd,nombre_empresa,n_sample) 
         # SAMPLE_ID AND FOLDER_ID NEED TO BE WRITTEN IN LOGS, TOO.
     """
     Second request form:
@@ -105,20 +112,17 @@ if new_submission:
         submission = return_submission(FORM_2)
         nombre_empresa = '-'.join(re.findall(r"[\w']+",str(submission['answers']['12']['answer'])))   
         long_submission  = jotformAPIClient.get_form_submissions('62284736240152',limit=2000000)
-        short_submission = jotformAPIClient.get_form_submissions('63025286426152')  # change survey ID
-        # Generar para largo y para corto
-        data, folder_id = create_db(long_submission, short_submission, sample_id, folder_id, name=nombre_empresa) # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa
-        viz_folder = vis_answers(data, folder_id, folder_name='Visualizaciones') # Se guarda en Drive/Resultados/Respuestas_empresas/nombre_empresa/visualizaciones
-        data = calcular_puntajes(data)                    
-        grupos = asignar_grupos(data, folder_id, nombre_empresa, viz_folder)
-        crear_compendios(data, nombre_empresa, folder_id, viz_folder)
+        short_submission = jotformAPIClient.get_form_submissions('63025286426152') 
+        data, folder_id = create_db(long_submission, short_submission, sample_id, folder_id, name=nombre_empresa) 
+        #generar_analisis(data,folder_id,nombre_empresa)
     
     """
     Third request form:
     Se pide analizar todos los resultados existentes.
     """
     if new_form_3:
-        # generar_grupos para todas las BDD
-        # data: BDD consolidada.
-        pass
-    
+        # Create folder of "Total analysis"
+        # Input queries
+        TOT_folder_id = insert_folder('0B3D2VjgtkabkSVh4d0I2RzZ0LWc',nombre)
+        TOT_data = pd.read_csv('BDD_PEMS_agregada.csv')
+        generar_analisis(TOT_data,TOT_folder_id,'Total')   

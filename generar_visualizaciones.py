@@ -4,12 +4,13 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import geopandas as gpd
 import matplotlib as mpl
 from drive_functions import insert_file,insert_folder
 import smopy
-
 import re
 import unicodedata
+from shapely.geometry import Point
 import sys
 
 #sns.set(rc={'axes.facecolor':'white'})
@@ -249,36 +250,45 @@ def plot_map(data,viz_folder,prefijo,columnas=[None]):
     * columnas: subset of columns to plot.
     * prefijo: importante para nomenclatura.
     """
+    
     if columnas != [None]:
-        columnas = columnas.append(None)
+        columnas += [None]
         
     for columna in columnas:
         if columna == None:
             data_plot = data.dropna(subset=[['Longitude','Latitude']])
         else:
             data_plot = data.dropna(subset=[['Longitude','Latitude',columna]])
+            
+            
+        # Different basemap options
         
-        #smopy.TILE_SERVER = "http://tile.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png"    
-        #smopy.TILE_SIZE = 512
-        map = smopy.Map(data_plot.Latitude.min(), data_plot.Longitude.max(), data_plot.Latitude.max(), data_plot.Longitude.min(),z=35)
-        map.show_ipython()
-        x, y = map.to_pixels(data_plot.Latitude,data_plot.Longitude)
-        ax = map.show_mpl(figsize=(20, 20))
-        
+        #smopy.TILE_SERVER = "http://tile.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png" 
+        #smopy.TILE_SERVER = "http://tile.openstreetmap.org/{z}/{x}/{y}.png"
+        #smopy.TILE_SERVER = "http://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
+        #smopy.TILE_SERVER = "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png";
+        smopy.TILE_SERVER = "https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png"            
+            
+        # Create basemap with Smopy using the geographical extent of our group
+        map = smopy.Map(data_plot.Latitude.min(), data_plot.Longitude.max(), data_plot.Latitude.max(), data_plot.Longitude.min(),z=100);
+        #map.show_ipython(); 
+        x, y = map.to_pixels(data_plot.Latitude,data_plot.Longitude);
+        ax = map.show_mpl(figsize=(40,40));
         if columna == None:
-            ax.scatter(x, y, s=50)#, s=50, c=data_plot[columna]) #mew=0
+            ax.scatter(x,y,c='#006400',linewidth=0, s=3000)
         else:
-            ax.scatter(x, y, s=50, c = data_plot[columna]) #mew=0
+            sr = (((data_plot[columna]-data_plot[columna].min())/data_plot[columna].max())*100).astype(int)
+            ax.scatter(x,y,c=sr,cmap='Greens',linewidth=0, s=3000)
         #plt.show()
         if columna != None:
             viz_name = quitar_caracteres_especiales(str(columna))
         else:
             viz_name = 'Total' #temporal
         viz_name = prefijo+' '+viz_name+'.'
-        plt.title(viz_name)
+        plt.title(viz_name,fontsize=80)
         plt.tight_layout()
-        plt.savefig('data_viz/'+viz_name+'.png')
-        insert_file(viz_name,' ',viz_folder, 'data_viz/'+viz_name+'.png',mimetype='image/png') 
-
+        plt.savefig('data_viz/'+viz_name+'.png',figsize=(40,40))
+        #insert_file(viz_name,' ',viz_folder, 'data_viz/'+viz_name+'.png',mimetype='image/png') 
+    
      
     
