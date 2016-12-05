@@ -28,8 +28,7 @@ Jotform API call, submission ids, etc.
 """
 FORM_1 = "62355313880152" # Interfaz de usuario
 FORM_2 = "62357176330151" # Generar análisis por empresa
-FORM_3 = "62356528846163" # Generar datos a partir del consolidado
-form_list  = [FORM_1,FORM_2,FORM_3]
+form_list  = [FORM_1,FORM_2]
 jotFormKey = '33dcf578e3523959b282e1bebff1f581'
 jotformAPIClient = JotformAPIClient(jotFormKey)
 
@@ -49,7 +48,7 @@ def update_submissions():
                     # OJO
                     text_file.write('NUMERO DE PERSONAS')
         try: 
-            # Case that there is already a log file
+            # -- In case there is already a log file
             if filecmp.cmp("logs/temp.txt",log_file_name)  == False:
                 copyfile("logs/temp.txt",log_file_name)            
                 bool_dict["new_form_{0}".format(n)] = True
@@ -78,7 +77,7 @@ def return_submission(form_option):
     
 def generar_analisis(data,folder_id, nombre_empresa):
     viz_folder = vis_answers(data, folder_id, folder_name='Visualizaciones') 
-    data = calcular_puntajes(data)                    
+    data = calcular_puntajes(data)    
     asignar_grupos(data, folder_id, nombre_empresa, viz_folder)
     crear_compendios(data, nombre_empresa, folder_id, viz_folder)
 
@@ -101,28 +100,28 @@ if new_submission:
             n_sample       = int(submission[0]['answers'][u'7']['answer'])
 
         sample_id, folder_id = generar_muestra(url_bdd,nombre_empresa,n_sample) 
-        # SAMPLE_ID AND FOLDER_ID NEED TO BE WRITTEN IN LOGS, TOO.
+        
+        # -- Saving sample_id and folder_id in logs
+        with open('logs/file_ids.log', "w") as txt_f:
+            txt_f.write(format(sample_id)+'/'+format(folder_id))
+            txt_f.close()
+        del(sample_id,folder_id)
     """
     Second request form:
     Se hizo un request para analizar resultados de una encuesta existente.
     """
     if new_form_2:
-        # FIX PREREQUISITES.
-        
         submission = return_submission(FORM_2)
-        nombre_empresa = '-'.join(re.findall(r"[\w']+",str(submission['answers']['12']['answer'])))   
-        long_submission  = jotformAPIClient.get_form_submissions('62284736240152',limit=2000000)
-        short_submission = jotformAPIClient.get_form_submissions('63025286426152') 
-        data, folder_id = create_db(long_submission, short_submission, sample_id, folder_id, name=nombre_empresa) 
-        #generar_analisis(data,folder_id,nombre_empresa)
-    
-    """
-    Third request form:
-    Se pide analizar todos los resultados existentes.
-    """
-    if new_form_3:
-        # Create folder of "Total analysis"
-        # Input queries
-        TOT_folder_id = insert_folder('0B3D2VjgtkabkSVh4d0I2RzZ0LWc',nombre)
-        TOT_data = pd.read_csv('BDD_PEMS_agregada.csv')
-        generar_analisis(TOT_data,TOT_folder_id,'Total')   
+        file = open('logs/file_ids.log', 'r')
+        sample_id, folder_id = file.read().split('/')
+        nombre_empresa = '-'.join(re.findall(r"[\w']+",str(submission['answers']['12']['answer'])))
+        if nombre_empresa != 'Total':
+            long_submission  = jotformAPIClient.get_form_submissions('62284736240152',limit=2000000)
+            short_submission = jotformAPIClient.get_form_submissions('63025286426152') 
+            data, folder_id = create_db(long_submission, short_submission, sample_id, folder_id, name=nombre_empresa) 
+            generar_analisis(data,folder_id,nombre_empresa)
+        else:
+            TOT_folder_id = insert_folder('0B3D2VjgtkabkSVh4d0I2RzZ0LWc','Total')
+            TOT_data = pd.read_csv('BDD_PEMS_agregada.csv')
+            generar_analisis(TOT_data,TOT_folder_id,'Total')  
+ 

@@ -5,7 +5,7 @@ from __future__ import print_function
 import re
 import pandas as pd
 from numpy import array
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
 from drive_functions import insert_file, insert_folder
 
 def generar_muestra(url_bdd,nombre,n_sample):

@@ -13,6 +13,7 @@ import unicodedata
 from shapely.geometry import Point
 import sys
 
+sns.set_style("white")
 #sns.set(rc={'axes.facecolor':'white'})
 # Turn interactive plotting off
 plt.ioff()
@@ -163,7 +164,8 @@ def vis_answers(df,parent_id,folder_name):
                 try:    
                     fig = plt.figure()
                     plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
-                    df[cols].value_counts().sort_index().plot(kind='hist',bins=10)
+                    #df[cols].value_counts().sort_index().plot(kind='bar')
+                    pd.value_counts(df[cols].values.flatten()).plot(kind='bar')
                     fig.canvas.mpl_connect('draw_event', on_draw)
                     
                     plt.title(cols)
@@ -174,7 +176,8 @@ def vis_answers(df,parent_id,folder_name):
                     try:
                         fig = plt.figure()
                         plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
-                        df[cols].value_counts().sort_index().plot(kind='bar')
+                        #df[cols].value_counts().sort_index().plot(kind='bar')
+                        pd.value_counts(df[cols].values.flatten()).sort_index().plot(kind='bar')
                         fig.canvas.mpl_connect('draw_event', on_draw)
                         
                         plt.title(cols)
