@@ -291,7 +291,7 @@ def plot_map(data,viz_folder,prefijo,columnas=[None]):
         plt.title(viz_name,fontsize=80)
         plt.tight_layout()
         plt.savefig('data_viz/'+viz_name+'.png',figsize=(40,40))
-        #insert_file(viz_name,' ',viz_folder, 'data_viz/'+viz_name+'.png',mimetype='image/png') 
+        insert_file(viz_name,' ',viz_folder, 'data_viz/'+viz_name+'.png',mimetype='image/png') 
     
      
     

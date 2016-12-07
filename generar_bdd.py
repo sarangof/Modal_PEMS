@@ -41,73 +41,84 @@ def submission_to_dict(submission,googleKey=googleKey):
     for replies in submission:
         dict_bool = False
         for questions in replies['answers']:
-            text   = replies['answers'][questions]['text']
-            tp = replies['answers'][questions]['type']
             try:
-                answer = int(replies['answers'][questions]['answer'])
-            except (ValueError, TypeError):
-                answer = replies['answers'][questions]['answer']
-            except KeyError:
-                answer = nan
-            try:
-                content = fill_empty_answer(answer)
-                if tp == 'control_matrix':
-                    if content == None:
-                        content = answer
-                        dict_bool = True
-                elif tp == 'control_fullname':
-                    if content == None:
-                        content = " ".join([answer['first'],answer['middle'],answer['last']])
-                elif tp == 'control_address':
-                    if content == None:
-                        dr = answer['addr_line1']
-                        direc = '+'.join(re.findall(r"[\w']+",dr))
-                        munici = replies['answers']['22']['answer']
-                        call = 'https://maps.googleapis.com/maps/api/geocode/json?address='+direc+'+'+munici+'+'+'+Colombia'+'&key='+googleKey
-                        request = requests.get(call)
-                        
-                        d = json.loads(request.content)
-                        if d['status']=='OK':
-                            lon,lat = d['results'][0]['geometry']['location']['lng'],d['results'][0]['geometry']['location']['lat']
-                        else:
-                            lon,lat = nan,nan
-                        content = (lon,lat)
-                elif tp in ['control_dropdown','control_textbox','control_spinner','control_scale','control_number','control_radio']:
-                    if content == None:
-                        content = answer
-                elif tp == 'control_datetime':
-                    if content == None:
-                        text = 'Edad'
-                        b = datetime.strptime(answer['day']+answer['month']+answer['year'],'%d%M%Y')
-                        a = datetime.now()  
-                        content = (a-b).days/365.
-                elif tp == 'control_time':
-                    if content == None:
-                        content = datetime.strptime(answer['hourSelect']+answer['minuteSelect']+answer['ampm'],'%H%M%p')
-                else:
-                    content = nan
-                if dict_bool:
-                    try:
-                        for k in answer.keys():
-                            content = answer[k]
-                            indexer = 'p'+str(questions)+' '+text+'. '+str(k)+''
-                            if indexer in dct.keys():
-                                dct[indexer].append(content)
+                text   = replies['answers'][questions]['text']
+                tp = replies['answers'][questions]['type']
+                try:
+                    answer = int(replies['answers'][questions]['answer'])
+                except (ValueError, TypeError):
+                    answer = replies['answers'][questions]['answer']
+                except KeyError:
+                    answer = nan
+                try:
+                    content = fill_empty_answer(answer)
+                    if tp == 'control_matrix':
+                        if content == None:
+                            content = answer
+                            dict_bool = True
+                    elif tp == 'control_fullname':
+                        if content == None:
+                            content = " ".join([answer['first'],answer['middle'],answer['last']])
+                    elif tp == 'control_address':
+                        if content == None:
+                            dr = answer['addr_line1']
+                            direc = '+'.join(re.findall(r"[\w']+",dr))
+                            munici = replies['answers']['22']['answer']
+                            call = 'https://maps.googleapis.com/maps/api/geocode/json?address='+direc+'+'+munici+'+'+'+Colombia'+'&key='+googleKey
+                            request = requests.get(call)
+                            
+                            d = json.loads(request.content)
+                            if d['status']=='OK':
+                                lon,lat = d['results'][0]['geometry']['location']['lng'],d['results'][0]['geometry']['location']['lat']
                             else:
-                                dct[indexer] = [content]
-                        dict_bool = False
-                    except AttributeError: # not sure if this is the right error
-                        dict_bool = False
+                                lon,lat = nan,nan
+                            content = (lon,lat)
+                    elif tp in ['control_dropdown','control_textbox','control_spinner','control_scale','control_number','control_radio']:
+                        if content == None:
+                            content = answer
+                    elif tp == 'control_datetime':
+                        try:
+                            if content == None:
+                                text = 'Edad'
+                                b = datetime.strptime(answer['day']+answer['month']+answer['year'],'%d%M%Y')
+                                a = datetime.now()  
+                                content = (a-b).days/365.
+                        except TypeError:
+                            content = nan
+                        
+                        # THROW AN EXCEPTION FOR VALUEERROR????
+                    elif tp == 'control_time':
+                        try:
+                            if content == None:
+                                content = datetime.strptime(answer['hourSelect']+answer['minuteSelect']+answer['ampm'],'%H%M%p')
+                        except TypeError:
+                            content = nan
+                    else:
                         content = nan
+                    if dict_bool:
+                        try:
+                            for k in answer.keys():
+                                content = answer[k]
+                                indexer = 'p'+str(questions)+' '+text+'. '+str(k)+''
+                                if indexer in dct.keys():
+                                    dct[indexer].append(content)
+                                else:
+                                    dct[indexer] = [content]
+                            dict_bool = False
+                        except AttributeError: # not sure if this is the right error
+                            dict_bool = False
+                            content = nan
+                            if 'p'+str(questions)+' '+text in dct.keys():
+                                dct['p'+str(questions)+' '+text].append(content)
+                            else:
+                                dct['p'+str(questions)+' '+text] = [content]
+                    else:
                         if 'p'+str(questions)+' '+text in dct.keys():
                             dct['p'+str(questions)+' '+text].append(content)
                         else:
                             dct['p'+str(questions)+' '+text] = [content]
-                else:
-                    if 'p'+str(questions)+' '+text in dct.keys():
-                        dct['p'+str(questions)+' '+text].append(content)
-                    else:
-                        dct['p'+str(questions)+' '+text] = [content]
+                except KeyError:
+                    continue
             except KeyError:
                 continue
     return dct
@@ -151,16 +162,22 @@ def create_db(long_submission,short_submission,sample_id,folder_id,name):
                     u'Bicicleta': 0.000021,
                     u'A pie': 0.000005,
                     u'A pie\u201d': 0.000005,
-                    u'A Pie': 0.000005
+                    u'A Pie': 0.000005,
+                    u'nan': nan,
+                    u'Veh\xedculo Entidad P\xfablica': 0.00083903045
                     }
                     # Dividir por occupancy rate?.    
     
     sample_list = load_file(sample_id)
     filename = str(name)+'.csv'
     title, description = filename, 'BDD '+str(name)+'.'
+    
     if check_duplicate_files('cedulas-'+name+'.csv',folder_id)[0]==True:
         data_long = pd.DataFrame([]).from_dict(submission_to_dict(long_submission))
-        data_short = pd.DataFrame([]).from_dict(submission_to_dict(short_submission))                 
+        data_short = pd.DataFrame([]).from_dict(submission_to_dict(short_submission))   
+        if name!= 'Total':
+            data_long  = data_long[data_long[u'p4 3. ¿En qué empresa trabaja?']==name]
+            data_short = data_short[data_short[u'p4 3. ¿En qué empresa trabaja?']==name]
         data = pd.concat([data_short,data_long])
         data = data.set_index(u'p8 2. Número de cédula') 
         

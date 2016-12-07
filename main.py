@@ -43,10 +43,10 @@ def update_submissions():
         log_file_name = str('logs/form'+str(n)+'.log')
         with open("logs/temp.txt", "w") as text_file:
             for sub in submission:            
-                text_file.write('Timestamp: {}'.format(sub['updated_at']))
+                text_file.write('Timestamp : {}'.format(sub['updated_at']))
                 if form_op == FORM_1:
                     # OJO
-                    text_file.write('NUMERO DE PERSONAS')
+                    text_file.write('NUMERO DE PERSONAS: ')
         try: 
             # -- In case there is already a log file
             if filecmp.cmp("logs/temp.txt",log_file_name)  == False:
@@ -63,9 +63,9 @@ def update_submissions():
                     text_file.write('Timestamp: {}'.format(sub['updated_at']))
         os.remove("logs/temp.txt")
         n+=1
-    new_form_1,new_form_2,new_form_3 = bool_dict.values()
+    new_form_1,new_form_2 = bool_dict.values()
     new_submission = sum(bool_dict.values())>0
-    return new_submission,new_form_1,new_form_2,new_form_3 
+    return new_submission,new_form_1,new_form_2
 
 def return_submission(form_option):
     """
@@ -81,7 +81,7 @@ def generar_analisis(data,folder_id, nombre_empresa):
     asignar_grupos(data, folder_id, nombre_empresa, viz_folder)
     crear_compendios(data, nombre_empresa, folder_id, viz_folder)
 
-new_submission,new_form_1,new_form_2,new_form_3  = update_submissions()
+new_submission,new_form_1,new_form_2  = update_submissions()
 
 if new_submission:
     """
