@@ -70,7 +70,7 @@ def submission_to_dict(submission,googleKey=googleKey):
                             d = json.loads(request.content)
                             if d['status']=='OK':
                                 lon,lat = d['results'][0]['geometry']['location']['lng'],d['results'][0]['geometry']['location']['lat']
-                                if lon > -75.670590 or lon < -75.236140 or lat > 6.4189133 or lat < 6.1534091:
+                                if (lon < -75.670590) or (lon > -75.236140) or (lat > 6.4189133) or (lat < 6.1122):
                                     lon,lat = nan,nan
                             else:
                                 lon,lat = nan,nan

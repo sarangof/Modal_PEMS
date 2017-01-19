@@ -34,7 +34,8 @@ def insertar_mapa(file_name,grupo,group_folder_id):
     carto_username = 'saf537'
     carto_key =  '17179e6a8fc54fe03857e65f1d562caf98a8d4bb'    
     cl = CartoDBAPIKey(carto_key, carto_username)  
-    grupo[['Emisiones','Latitude','Longitude']].to_excel('grupos/'+file_name+'.xlsx',index=False) 
+    grupo = grupo.reset_index()
+    grupo[[u'p8 2. N\xfamero de c\xe9dula',u'p79 8. G\xe9nero',u'p12 Edad',u'p54 12. \xbfTiene alguna discapacidad?',u'p27 18. Sedes',u'p81 24. \xbfTiene un horario fijo para ir al trabajo?','Emisiones','Latitude','Longitude']].to_excel('grupos/'+file_name+'.xlsx',index=False) 
     insert_file(file_name+'.csv',' ',group_folder_id, 'grupos/'+file_name+'.xlsx',mimetype='text/csv') 
     fi = FileImport('grupos/'+file_name+'.xlsx', cl, privacy='public',content_guessing='true',create_vis='true',table_name=file_name)
     fi.run()
@@ -83,7 +84,7 @@ def asignar_grupos(data, folder_id, nombre_empresa, viz_folder):
     # -- Personas que no montan en bicicleta pero que declaran estar pensando en hacerlo.
     grupo_bici_2 = data[
                     (data[u'p180 41. \xbfEst\xe1 considerando utilizar un modo de transporte diferente al que ya utiliza?'].astype(str) == 'Sí'.encode('utf-8'))
-                    & (data[u'p165 42. Si respondi\xf3 "S\xed" en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Bicicleta')
+                    & (data[u'p165 42. Si respondi\xf3 &quot;S\xed&quot; en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Bicicleta')
                     & (data[u'p67 32. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para ir al trabajo?'] != 'Bicicleta')
                     & (data[u'p68 33. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para regresar del trabajo?'] != 'Bicicleta')
                     ]
@@ -102,7 +103,7 @@ def asignar_grupos(data, folder_id, nombre_empresa, viz_folder):
                     & (data[u'p68 33. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para regresar del trabajo?'].astype(str) != 'Bicicleta')
                     & (data[u'p35 47. En general \xbfcu\xe1nto le interesar\xeda utilizar cada uno de los siguientes medios? 1 no le interesa, 3 inter\xe9s promedio, 5 le interesa mucho.. Bicicleta'] > 2.)
                     & (data[u'p180 41. \xbfEst\xe1 considerando utilizar un modo de transporte diferente al que ya utiliza?'].astype(str) == 'Sí'.encode('utf-8'))
-                    & (data[u'p165 42. Si respondi\xf3 "S\xed" en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Bicicleta')   
+                    & (data[u'p165 42. Si respondi\xf3 &quot;S\xed&quot; en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Bicicleta')   
                     & (data[u'p45 48. ¿Hasta qué punto valoraría que su empresa promueva la bicicleta como medio de transporte?']>2.)
                     ]
                     
@@ -143,9 +144,9 @@ def asignar_grupos(data, folder_id, nombre_empresa, viz_folder):
                     & (data[u'p65 40. ¿Qué tan sencillo le es transportarse hacia y desde la empresa?'] < 6.)
                     & (data[u'p54 12. \xbfTiene alguna discapacidad?'].astype(str) =='No')
                     & 
-                    ((data[u'p165 42. Si respondi\xf3 "S\xed" en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Bus/Buseta/Microbus/Bus intermunicipal')   
-                    | (data[u'p165 42. Si respondi\xf3 "S\xed" en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Metro/Metroplus/Integrados/Tranvia/Ruta con tarifa integrada')  
-                    | (data[u'p165 42. Si respondi\xf3 "S\xed" en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Bus/Buseta/Bus/Buseta/Microbus/Bus intermunicipal')  )
+                    ((data[u'p165 42. Si respondi\xf3 &quot;S\xed&quot; en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Bus/Buseta/Microbus/Bus intermunicipal')   
+                    | (data[u'p165 42. Si respondi\xf3 &quot;S\xed&quot; en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Metro/Metroplus/Integrados/Tranvia/Ruta con tarifa integrada')  
+                    | (data[u'p165 42. Si respondi\xf3 &quot;S\xed&quot; en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Bus/Buseta/Bus/Buseta/Microbus/Bus intermunicipal')  )
                     # Hora de entrada al trabajo
                     # Hora de salida al trabajo
                     ]
@@ -162,9 +163,9 @@ def asignar_grupos(data, folder_id, nombre_empresa, viz_folder):
                     & (data[u'p68 33. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para regresar del trabajo?'].astype(str) == 'Moto (Conductor o Acompañante)')
                     & (data[u'p180 41. \xbfEst\xe1 considerando utilizar un modo de transporte diferente al que ya utiliza?'].astype(str) == 'No'.encode('utf-8'))
                     & 
-                    ((data[u'p165 42. Si respondi\xf3 "S\xed" en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Bus/Buseta/Microbus/Bus intermunicipal')   
-                    | (data[u'p165 42. Si respondi\xf3 "S\xed" en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Metro/Metroplus/Integrados/Tranvia/Ruta con tarifa integrada')  
-                    | (data[u'p165 42. Si respondi\xf3 "S\xed" en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Bus/Buseta/Bus/Buseta/Microbus/Bus intermunicipal')  )
+                    ((data[u'p165 42. Si respondi\xf3 &quot;S\xed&quot; en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Bus/Buseta/Microbus/Bus intermunicipal')   
+                    | (data[u'p165 42. Si respondi\xf3 &quot;S\xed&quot; en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Metro/Metroplus/Integrados/Tranvia/Ruta con tarifa integrada')  
+                    | (data[u'p165 42. Si respondi\xf3 &quot;S\xed&quot; en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Bus/Buseta/Bus/Buseta/Microbus/Bus intermunicipal')  )
                     # Hora de entrada al trabajo
                     # Hora de salida al trabajo
                     ]
@@ -188,9 +189,9 @@ def asignar_grupos(data, folder_id, nombre_empresa, viz_folder):
                     & (data[u'p180 41. \xbfEst\xe1 considerando utilizar un modo de transporte diferente al que ya utiliza?'].astype(str) == 'Sí'.encode('utf-8'))
                     & (data[u'p54 12. \xbfTiene alguna discapacidad?'].astype(str) =='No')
                     & 
-                    ((data[u'p165 42. Si respondi\xf3 "S\xed" en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Bus/Buseta/Microbus/Bus intermunicipal')   
-                    | (data[u'p165 42. Si respondi\xf3 "S\xed" en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Metro/Metroplus/Integrados/Tranvia/Ruta con tarifa integrada')  
-                    | (data[u'p165 42. Si respondi\xf3 "S\xed" en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Bus/Buseta/Bus/Buseta/Microbus/Bus intermunicipal')  )
+                    ((data[u'p165 42. Si respondi\xf3 &quot;S\xed&quot; en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Bus/Buseta/Microbus/Bus intermunicipal')   
+                    | (data[u'p165 42. Si respondi\xf3 &quot;S\xed&quot; en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Metro/Metroplus/Integrados/Tranvia/Ruta con tarifa integrada')  
+                    | (data[u'p165 42. Si respondi\xf3 &quot;S\xed&quot; en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Bus/Buseta/Bus/Buseta/Microbus/Bus intermunicipal')  )
                     # Hora de entrada al trabajo
                     # Hora de salida al trabajo
                     ]
@@ -214,9 +215,9 @@ def asignar_grupos(data, folder_id, nombre_empresa, viz_folder):
                 & (data[u'p68 33. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para regresar del trabajo?'].astype(str) != 'A pie')
                 & (data[u'p180 41. \xbfEst\xe1 considerando utilizar un modo de transporte diferente al que ya utiliza?'].astype(str) == 'Sí'.encode('utf-8'))
                 & 
-                ((data[u'p165 42. Si respondi\xf3 "S\xed" en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Bus/Buseta/Microbus/Bus intermunicipal')   
-                | (data[u'p165 42. Si respondi\xf3 "S\xed" en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Metro/Metroplus/Integrados/Tranvia/Ruta con tarifa integrada')  
-                | (data[u'p165 42. Si respondi\xf3 "S\xed" en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Bus/Buseta/Bus/Buseta/Microbus/Bus intermunicipal')  )
+                ((data[u'p165 42. Si respondi\xf3 &quot;S\xed&quot; en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Bus/Buseta/Microbus/Bus intermunicipal')   
+                | (data[u'p165 42. Si respondi\xf3 &quot;S\xed&quot; en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Metro/Metroplus/Integrados/Tranvia/Ruta con tarifa integrada')  
+                | (data[u'p165 42. Si respondi\xf3 &quot;S\xed&quot; en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'Bus/Buseta/Bus/Buseta/Microbus/Bus intermunicipal')  )
                 # Hora de entrada al trabajo
                 # Hora de salida al trabajo
                 ]
@@ -233,7 +234,7 @@ def asignar_grupos(data, folder_id, nombre_empresa, viz_folder):
                     & (data[u'p68 33. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para regresar del trabajo?'].astype(str) != 'A Pie')
                     & (data[u'p68 33. \xbfCu\xe1l es su medio habitual (m\xe1s frecuente y que utiliza por m\xe1s tiempo en cada viaje) para regresar del trabajo?'].astype(str) != 'Bicicleta')
                     & (data[u'p180 41. \xbfEst\xe1 considerando utilizar un modo de transporte diferente al que ya utiliza?'].astype(str) == 'Sí'.encode('utf-8'))
-                    & (data[u'p165 42. Si respondi\xf3 "S\xed" en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'A pie')   
+                    & (data[u'p165 42. Si respondi\xf3 &quot;S\xed&quot; en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'A pie')   
                     & (data[u'p71 38. ¿Qué tan satisfecho está con su medio de transporte usual para ir y regresar del trabajo?'] < 7.)
                     ]    
     
@@ -244,7 +245,7 @@ def asignar_grupos(data, folder_id, nombre_empresa, viz_folder):
      
     # -- Personas que muestran disposicion a caminar.
     grupo_peaton_2 = data[(data[u'p180 41. \xbfEst\xe1 considerando utilizar un modo de transporte diferente al que ya utiliza?'].astype(str) == 'Sí'.encode('utf-8'))
-                    & (data[u'p165 42. Si respondi\xf3 "S\xed" en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'A pie')   
+                    & (data[u'p165 42. Si respondi\xf3 &quot;S\xed&quot; en la pregunta anterior \xbfqu\xe9 modo de transporte est\xe1 considerando usar?'].astype(str) == 'A pie')   
                     ]  
     if len(grupo_peaton_2) > 0:
         file_name = nombre_empresa+'-grupo_peaton_2'

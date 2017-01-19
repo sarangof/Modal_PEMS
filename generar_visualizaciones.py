@@ -14,6 +14,7 @@ from shapely.geometry import Point
 import sys
 
 sns.set_style("white")
+sns.set_palette("Oranges")
 #sns.set(rc={'axes.facecolor':'white'})
 # Turn interactive plotting off
 plt.ioff()
@@ -233,7 +234,7 @@ def vis_compendios(df,resumen_folder_id,aggregation_name):
     for cols in df:
         if len(cols):
             cols = cols[:150]
-        figure_name = aggregation_name + str(quitar_caracteres_especiales(cols))+'.png'
+        figure_name = aggregation_name + str(quitar_caracteres_especiales(cols))
         fig = plt.figure()
         plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
         df[cols].plot(kind='bar')
@@ -241,8 +242,8 @@ def vis_compendios(df,resumen_folder_id,aggregation_name):
         
         plt.title(cols)
         plt.tight_layout()
-        plt.savefig('data_viz/'+figure_name)  
-        insert_file(figure_name, ' ', resumen_folder_id, 'data_viz/'+figure_name, mimetype='image/png') 
+        plt.savefig('data_viz/'+figure_name+'.png')  
+        insert_file(figure_name, ' ', resumen_folder_id, 'data_viz/'+figure_name+'.png', mimetype='image/png') 
         
 def plot_map(data,viz_folder,prefijo,columnas=[None]):
     """
@@ -262,8 +263,7 @@ def plot_map(data,viz_folder,prefijo,columnas=[None]):
             data_plot = data.dropna(subset=[['Longitude','Latitude']])
         else:
             data_plot = data.dropna(subset=[['Longitude','Latitude',columna]])
-            
-            
+        
         # Different basemap options
         
         #smopy.TILE_SERVER = "http://tile.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png" 
@@ -278,10 +278,10 @@ def plot_map(data,viz_folder,prefijo,columnas=[None]):
         x, y = map.to_pixels(data_plot.Latitude,data_plot.Longitude);
         ax = map.show_mpl(figsize=(40,40));
         if columna == None:
-            ax.scatter(x,y,c='#006400',linewidth=0, s=3000)
+            ax.scatter(x, y, cmap='Oranges', alpha=0.7, linewidth=1, s=2000) #c='#006400'
         else:
             sr = (((data_plot[columna]-data_plot[columna].min())/data_plot[columna].max())*100).astype(int)
-            ax.scatter(x,y,c=sr,cmap='Greens',linewidth=0, s=3000)
+            ax.scatter(x, y, c=sr, cmap='Oranges', alpha=0.7, linewidth=1, s=2000)
         #plt.show()
         if columna != None:
             viz_name = quitar_caracteres_especiales(str(columna))
