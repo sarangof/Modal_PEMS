@@ -36,7 +36,8 @@ def insertar_mapa(file_name,grupo,group_folder_id):
     cl = CartoDBAPIKey(carto_key, carto_username)  
     grupo = grupo.reset_index()
     grupo[[u'p8 2. N\xfamero de c\xe9dula',u'p79 8. G\xe9nero',u'p12 Edad',u'p54 12. \xbfTiene alguna discapacidad?',u'p27 18. Sedes',u'p81 24. \xbfTiene un horario fijo para ir al trabajo?','Emisiones','Latitude','Longitude']].to_excel('grupos/'+file_name+'.xlsx',index=False) 
-    insert_file(file_name+'.csv',' ',group_folder_id, 'grupos/'+file_name+'.xlsx',mimetype='text/csv') 
+    grupo[[u'p8 2. N\xfamero de c\xe9dula',u'p79 8. G\xe9nero',u'p12 Edad',u'p54 12. \xbfTiene alguna discapacidad?',u'p27 18. Sedes',u'p81 24. \xbfTiene un horario fijo para ir al trabajo?','Emisiones','Latitude','Longitude']].to_csv('grupos/'+file_name+'.csv',index=False)
+    insert_file(file_name+'.csv',' ',group_folder_id, 'grupos/'+file_name+'.csv',mimetype='text/csv') 
     fi = FileImport('grupos/'+file_name+'.xlsx', cl, privacy='public',content_guessing='true',create_vis='true',table_name=file_name)
     fi.run()
     

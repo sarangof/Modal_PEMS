@@ -12,6 +12,7 @@ import re
 import unicodedata
 from shapely.geometry import Point
 import sys
+import json
 
 sns.set_style("white")
 sns.set_palette("Oranges")
@@ -138,7 +139,7 @@ def vis_answers(df,parent_id,folder_name):
                 try:
                     fig = plt.figure()
                     plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
-                    ax = df[cols].dropna().plot(kind='box')
+                    ax = df[cols].dropna().plot(kind='box',color='#ff4500')
                     quantile = df[cols].quantile(.95)
                     fig.canvas.mpl_connect('draw_event', on_draw)
                     plt.title(cols)
@@ -166,7 +167,7 @@ def vis_answers(df,parent_id,folder_name):
                     fig = plt.figure()
                     plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
                     #df[cols].value_counts().sort_index().plot(kind='bar')
-                    pd.value_counts(df[cols].values.flatten()).plot(kind='bar')
+                    pd.value_counts(df[cols].values.flatten()).plot(kind='bar',color='#ff4500')
                     fig.canvas.mpl_connect('draw_event', on_draw)
                     
                     plt.title(cols)
@@ -178,7 +179,7 @@ def vis_answers(df,parent_id,folder_name):
                         fig = plt.figure()
                         plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
                         #df[cols].value_counts().sort_index().plot(kind='bar')
-                        pd.value_counts(df[cols].values.flatten()).sort_index().plot(kind='bar')
+                        pd.value_counts(df[cols].values.flatten()).sort_index().plot(kind='bar',color='#ff4500')
                         fig.canvas.mpl_connect('draw_event', on_draw)
                         
                         plt.title(cols)
@@ -237,11 +238,18 @@ def vis_compendios(df,resumen_folder_id,aggregation_name):
         figure_name = aggregation_name + str(quitar_caracteres_especiales(cols))
         fig = plt.figure()
         plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
-        df[cols].plot(kind='bar')
+        df[cols].plot(kind='bar',c='#ff4500')
         fig.canvas.mpl_connect('draw_event', on_draw)
         
         plt.title(cols)
         plt.tight_layout()
+        
+        unidades = json.loads(open('Files/units.json').read())    
+        
+        try:
+            plt.ylabel(unidades[figure_name])
+        except ValueError:
+            pass
         plt.savefig('data_viz/'+figure_name+'.png')  
         insert_file(figure_name, ' ', resumen_folder_id, 'data_viz/'+figure_name+'.png', mimetype='image/png') 
         
@@ -278,10 +286,10 @@ def plot_map(data,viz_folder,prefijo,columnas=[None]):
         x, y = map.to_pixels(data_plot.Latitude,data_plot.Longitude);
         ax = map.show_mpl(figsize=(40,40));
         if columna == None:
-            ax.scatter(x, y, cmap='Oranges', alpha=0.7, linewidth=1, s=2000) #c='#006400'
+            ax.scatter(x, y, c='#ff4500', alpha=0.4, linewidth=3, s=1000) #c='#006400'
         else:
             sr = (((data_plot[columna]-data_plot[columna].min())/data_plot[columna].max())*100).astype(int)
-            ax.scatter(x, y, c=sr, cmap='Oranges', alpha=0.7, linewidth=1, s=2000)
+            ax.scatter(x, y, c=sr, colormap='Oranges', alpha=0.7, linewidth=2, s=2000)
         #plt.show()
         if columna != None:
             viz_name = quitar_caracteres_especiales(str(columna))
