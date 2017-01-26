@@ -195,12 +195,14 @@ def create_db(long_submission,short_submission,sample_id,folder_id,name):
                 call_dist = 'https://maps.googleapis.com/maps/api/distancematrix/json?origins='+str(lat1)+','+str(lon1)+'&destinations='+lat2+','+lon2+'&key='+googleKey
                 d_topo = json.loads(requests.get(call_topo).content) 
                 d_dist = json.loads(requests.get(call_dist).content) 
+                if d_dist['status'] == 'OK': 
+                    dist_temp = float(d_dist['rows'][0]['elements'][0]['distance']['value'])
+                    distance_list.append(dist_temp)
                 if d_topo['status'] == 'OK':
                     ele_dots = [punto['elevation'] for punto in d_topo['results']]
                     temp_list = array(ele_dots+ele_dots[-1:]) -  array(ele_dots[:1]+ele_dots) 
-                    elevation_list.append(float(abs(temp_list).sum()/4.))
-                if d_dist['status'] == 'OK': 
-                    distance_list.append(float(d_dist['rows'][0]['elements'][0]['distance']['value']))
+                    elevation_list.append(float(100*(abs(temp_list).sum()/4./dist_temp)))
+                    del(dist_temp)
             except (TypeError, KeyError) as e:
                 elevation_list.append(nan)
                 distance_list.append(nan)

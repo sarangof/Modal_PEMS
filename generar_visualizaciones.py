@@ -235,10 +235,11 @@ def vis_compendios(df,resumen_folder_id,aggregation_name):
     for cols in df:
         if len(cols):
             cols = cols[:150]
-        figure_name = aggregation_name + str(quitar_caracteres_especiales(cols))
+        new_name = str(quitar_caracteres_especiales(cols))
+        figure_name = aggregation_name + new_name
         fig = plt.figure()
         plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
-        df[cols].plot(kind='bar',c='#ff4500')
+        df[cols].plot(kind='bar', color='#ff4500')
         fig.canvas.mpl_connect('draw_event', on_draw)
         
         plt.title(cols)
@@ -247,8 +248,8 @@ def vis_compendios(df,resumen_folder_id,aggregation_name):
         unidades = json.loads(open('Files/units.json').read())    
         
         try:
-            plt.ylabel(unidades[figure_name])
-        except ValueError:
+            plt.ylabel(unidades[new_name])
+        except KeyError:
             pass
         plt.savefig('data_viz/'+figure_name+'.png')  
         insert_file(figure_name, ' ', resumen_folder_id, 'data_viz/'+figure_name+'.png', mimetype='image/png') 
