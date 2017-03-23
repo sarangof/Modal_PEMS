@@ -26,3 +26,16 @@ Herramienta para asesorar Planes Estratégicos de Movilidad Sostenible ([PEMS](h
 * Seaborn
 * Smopy
 * Sklearn
+
+## Modulos
+
+* Jotform-Python
+* Httplib2
+* oauth2client
+* Apiclient
+* smopy
+* geopandas
+* cartodb
+
+
+_Remember to get the file client_secret.json from the App in Google Developers_
