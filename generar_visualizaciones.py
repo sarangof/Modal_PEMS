@@ -13,6 +13,7 @@ import unicodedata
 from shapely.geometry import Point
 import sys
 import json
+from numpy import nan
 
 sns.set_style("white")
 sns.set_palette("Oranges")
@@ -122,7 +123,7 @@ def min_dist_inside(point, rotation, box):
 
 def vis_answers(df,parent_id,folder_name):
 
-    folder_id = insert_folder(parent_id,folder_name)
+    #   folder_id = insert_folder(parent_id,folder_name)
     for cols in df.columns:         
         if len(df[cols].dropna()) > 0:
             cols_n = cols
@@ -146,7 +147,7 @@ def vis_answers(df,parent_id,folder_name):
                     plt.tight_layout()
                     ax.set_ylim(0, (quantile))
                     plt.savefig('data_viz/'+figure_name)  
-                    insert_file(figure_name,' ',folder_id, 'data_viz/'+figure_name,mimetype='image/png')        
+                    #insert_file(figure_name,' ',folder_id, 'data_viz/'+figure_name,mimetype='image/png')        
                     plt.close(fig)
                     
                 except TypeError:
@@ -167,30 +168,32 @@ def vis_answers(df,parent_id,folder_name):
                     fig = plt.figure()
                     plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
                     #df[cols].value_counts().sort_index().plot(kind='bar')
-                    pd.value_counts(df[cols].values.flatten()).plot(kind='bar',color='#ff4500')
+                    #df[cols].value_counts(dropna=False).plot(kind='bar',color='#ff4500')
+                    pd.value_counts(df[cols].replace(u'',nan).values.flatten(),dropna=True).sort_index().plot(kind='bar',color='#ff4500')
                     fig.canvas.mpl_connect('draw_event', on_draw)
                     
                     plt.title(cols)
-                    plt.tight_layout()
+                    #plt.tight_layout()
                     plt.savefig('data_viz/'+figure_name)  
-                    insert_file(figure_name,' ',folder_id, 'data_viz/'+figure_name,mimetype='image/png')                     
-                except ValueError:
+                    #insert_file(figure_name,' ',folder_id, 'data_viz/'+figure_name,mimetype='image/png')                     
+                except (ValueError,TypeError):
                     try:
                         fig = plt.figure()
                         plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
                         #df[cols].value_counts().sort_index().plot(kind='bar')
-                        pd.value_counts(df[cols].values.flatten()).sort_index().plot(kind='bar',color='#ff4500')
+                        #df[cols].value_counts(dropna=False).plot(kind='bar',color='#ff4500')
+                        pd.value_counts(df[cols].replace(u'',nan).values.flatten(),dropna=True).sort_index().plot(kind='bar',color='#ff4500')
                         fig.canvas.mpl_connect('draw_event', on_draw)
                         
                         plt.title(cols)
-                        plt.tight_layout()
+                        #plt.tight_layout()
                         plt.savefig('data_viz/'+figure_name)  
-                        insert_file(figure_name,' ',folder_id, 'data_viz/'+figure_name,mimetype='image/png') 
+                        #insert_file(figure_name,' ',folder_id, 'data_viz/'+figure_name,mimetype='image/png') 
                         
-                    except ValueError:
+                    except (ValueError,TypeError):
                         pass
-    plot_map(df,folder_id,'')
-    return folder_id
+    #plot_map(df,folder_id,'')
+    #   return folder_id
 
                 
 def crear_compendios(data,nombre_empresa,folder_id,viz_folder):

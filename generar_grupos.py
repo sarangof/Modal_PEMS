@@ -21,7 +21,7 @@ def calcular_puntajes(data):
     """
     Aqui se implementan las "funciones" de probabilidad de usar cada uno de los modos.
     """    
-    cols = ['p12 Edad','Pendiente','Distancia','p80 16. Salario (mensual)']
+    cols = ['p12 Edad','Pendiente','Distancia']
     df = data[cols] #'18. Salario'
     df= 1./df
     df -= df.min() 

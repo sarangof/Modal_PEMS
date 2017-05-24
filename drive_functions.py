@@ -3,7 +3,7 @@
 """
 Created on Thu Aug 25 17:43:54 2016
 
-@author: saf537
+@author: sarangof. Sources from Google developers.
 """
 from __future__ import print_function
 import httplib2

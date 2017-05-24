@@ -1,7 +1,7 @@
 #!/home/saf537/anaconda2/lib/python2.7/
 # -*- coding: utf-8 -*-
 """
-Author: @sarangof
+Author: sarangof
 """
 
 """
@@ -46,7 +46,7 @@ def update_submissions():
                 text_file.write('Timestamp : {}'.format(sub['updated_at']))
                 if form_op == FORM_1:
                     # OJO
-                    text_file.write('NUMERO DE PERSONAS: ')
+                    text_file.write('Empresa: '+'/n')
         try: 
             # -- In case there is already a log file
             if filecmp.cmp("logs/temp.txt",log_file_name)  == False:
@@ -111,6 +111,7 @@ if new_submission:
     Se hizo un request para analizar resultados de una encuesta existente.
     """
     if new_form_2:
+        # TIENE QUE HABER UNA FORMA DE ENCONTRAR UN MATCH
         submission = return_submission(FORM_2)
         file = open('logs/file_ids.log', 'r')
         sample_id, folder_id = file.read().split('/')
