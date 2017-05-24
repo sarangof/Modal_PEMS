@@ -32,6 +32,7 @@ form_list  = [FORM_1,FORM_2]
 jotFormKey = '33dcf578e3523959b282e1bebff1f581'
 jotformAPIClient = JotformAPIClient(jotFormKey)
 
+
 def update_submissions():
     """
     Creates a log on the last submission for each of the forms and alerts new submissions.
@@ -81,7 +82,10 @@ def generar_analisis(data,folder_id, nombre_empresa):
     asignar_grupos(data, folder_id, nombre_empresa, viz_folder)
     crear_compendios(data, nombre_empresa, folder_id, viz_folder)
 
+
 new_submission,new_form_1,new_form_2  = update_submissions()
+
+
 
 if new_submission:
     """
@@ -98,9 +102,7 @@ if new_submission:
             url_bdd        = str(submission[0]['answers'][u'5']['answer'][0])
             nombre_empresa = str(submission[0]['answers'][u'6']['answer'])
             n_sample       = int(submission[0]['answers'][u'7']['answer'])
-
         sample_id, folder_id = generar_muestra(url_bdd,nombre_empresa,n_sample) 
-        
         # -- Saving sample_id and folder_id in logs
         with open('logs/file_ids.log', "w") as txt_f:
             txt_f.write(format(sample_id)+'/'+format(folder_id))
@@ -115,7 +117,7 @@ if new_submission:
         submission = return_submission(FORM_2)
         file = open('logs/file_ids.log', 'r')
         sample_id, folder_id = file.read().split('/')
-        nombre_empresa = '-'.join(re.findall(r"[\w']+",str(submission['answers']['12']['answer'])))
+        nombre_empresa = 'Locería'#'-'.join(re.findall(r"[\w']+",str(submission['answers']['12']['answer'])))
         if nombre_empresa != 'Total':
             long_submission  = jotformAPIClient.get_form_submissions('62284736240152',limit=2000000)
             short_submission = jotformAPIClient.get_form_submissions('63025286426152') 

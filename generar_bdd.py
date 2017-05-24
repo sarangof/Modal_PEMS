@@ -8,8 +8,8 @@ import json
 import re
 from drive_functions import insert_file,check_duplicate_files, load_file, update_file
 from numpy import nan, array, abs
-
-googleKey = 'AIzaSyBvuKUfCCTNzc8etkAuaU-16uzl3N4f6Vw' # Google Maps API for georeferencing
+ 
+googleKey =  'AIzaSyBvuKUfCCTNzc8etkAuaU-16uzl3N4f6Vw' # Google Maps API for georeferencing Backup AIzaSyBiD0UMyafPjNn0TFUa1xsf3B8v-CPrMrw
 
 def create_keys(dct,indexer,content):
     """
@@ -68,13 +68,15 @@ def submission_to_dict(submission,googleKey=googleKey):
                             request = requests.get(call)
                             
                             d = json.loads(request.content)
+                            print(call)
                             if d['status']=='OK':
                                 lon,lat = d['results'][0]['geometry']['location']['lng'],d['results'][0]['geometry']['location']['lat']
-                                if (lon < -75.670590) or (lon > -75.236140) or (lat > 6.4189133) or (lat < 6.1122):
-                                    lon,lat = nan,nan
+                                #if (lon < -75.670590) or (lon > -75.236140) or (lat > 6.4189133) or (lat < 6.02):
+                                #    lon,lat = nan,nan
                             else:
                                 lon,lat = nan,nan
                             content = (lon,lat)
+                            #print(content)
                     elif tp in ['control_dropdown','control_textbox','control_spinner','control_scale','control_number','control_radio']:
                         if content == None:
                             content = answer
@@ -85,7 +87,7 @@ def submission_to_dict(submission,googleKey=googleKey):
                                 b = datetime.strptime(answer['day']+answer['month']+answer['year'],'%d%M%Y')
                                 a = datetime.now()  
                                 content = (a-b).days/365.
-                        except TypeError, ValueError:
+                        except (TypeError, ValueError):
                             content = nan
                         
                         # THROW AN EXCEPTION FOR VALUEERROR????
@@ -147,92 +149,93 @@ def update_main_db(data,folder_id):
             
 
 def create_db(long_submission,short_submission,sample_id,folder_id,name):
-"""
-Creates a pandas data frame that includes both surveys and exports it to Google Drive.
-"""
+    """
+    Creates a pandas data frame that includes both surveys and exports it to Google Drive.
+    """
 
-# This will have to change when everything is unified
-emissions_mode = {u'Bus/Buseta/Bus/Buseta/Microbus/Bus intermunicipal': 0.00018,
-                  u'Bus/Buseta/Microbus/Bus intermunicipal': 0.00018,
-                u'Metro/Metroplus/Integrados/Tranvia/Ruta con tarifa integrada': 0.00010,
-                u'Taxi/Taxi colectivo Vehículo compartido pertenenciente a la empresa/entidad Vehículo privado perteneciente a la empresa/entidad': 0.00083903045,
-                 u'Taxi/Taxi colectivo':  0.00083903045,
-                 u'Vehículo compartido pertenenciente a la empresa/entidad': 0.00083903045,
-                 u'Veh\xedculo privado perteneciente a la empresa/entidad': 0.00083903045,
-                u'Auto (Conductor o Acompañante)': 0.00083903045,
-                u'Moto (Conductor o Acompañante)': 0.0007393045,
-                u'Bicicleta': 0.000021,
-                u'A pie': 0.000005,
-                u'A pie\u201d': 0.000005,
-                u'A Pie': 0.000005,
-                u'nan': nan,
-                u'Veh\xedculo Entidad P\xfablica': 0.00083903045
-                }
-                # Dividir por occupancy rate?.    
+    # This will have to change when everything is unified
+    emissions_mode = {u'Bus/Buseta/Bus/Buseta/Microbus/Bus intermunicipal': 0.00018,
+                      u'Bus/Buseta/Microbus/Bus intermunicipal': 0.00018,
+                    u'Metro/Metroplus/Integrados/Tranvia/Ruta con tarifa integrada': 0.00010,
+                    u'Taxi/Taxi colectivo Vehículo compartido pertenenciente a la empresa/entidad Vehículo privado perteneciente a la empresa/entidad': 0.00083903045,
+                     u'Taxi/Taxi colectivo':  0.00083903045,
+                     u'Vehículo compartido pertenenciente a la empresa/entidad': 0.00083903045,
+                     u'Veh\xedculo privado perteneciente a la empresa/entidad': 0.00083903045,
+                    u'Auto (Conductor o Acompañante)': 0.00083903045,
+                    u'Moto (Conductor o Acompañante)': 0.0007393045,
+                    u'Bicicleta': 0.000021,
+                    u'A pie': 0.000005,
+                    u'A pie\u201d': 0.000005,
+                    u'A Pie': 0.000005,
+                    u'nan': nan,
+                    u'Veh\xedculo Entidad P\xfablica': 0.00083903045
+                    }
+                    # Dividir por occupancy rate?.    
 
-sample_list = load_file(sample_id)
-filename = str(name)+'.csv'
-title, description = filename, 'BDD '+str(name)+'.'
+    #sample_list = load_file(sample_id)
+    filename = str(name)+'.csv'
+    title, description = filename, 'BDD '+str(name)+'.'
 
-if check_duplicate_files('cedulas-'+name+'.csv',folder_id)[0]==True:
-    data_long = pd.DataFrame([]).from_dict(submission_to_dict(long_submission),orient='index')
-    data_long = data_long.transpose()
-    data_short = pd.DataFrame([]).from_dict(submission_to_dict(short_submission),orient='index')
-    data_short = data_short.transpose()   
-    if name!= 'Total':
-        data_long  = data_long[data_long[u'p4 3. ¿En qué empresa trabaja?']==name]
-        data_short = data_short[data_short[u'p4 3. ¿En qué empresa trabaja?']==name]
-    data = pd.concat([data_short,data_long])
-    data = data.set_index(u'p8 2. Número de cédula') 
+    if True:#check_duplicate_files('cedulas-'+name+'.csv',folder_id)[0]==True:
+        data_long = pd.DataFrame([]).from_dict(submission_to_dict(long_submission),orient='index')
+        data_long = data_long.transpose()
+        data_short = pd.DataFrame([]).from_dict(submission_to_dict(short_submission),orient='index')
+        data_short = data_short.transpose()   
+        if name!= 'Total':
+            data_long  = data_long[data_long[u'p4 3. ¿En qué empresa trabaja?']=='Locería']
+            data_short = data_short[data_short[u'p4 3. ¿En qué empresa trabaja?']=='Locería']
+        data = pd.concat([data_short,data_long])
+        data = data.set_index(u'p8 2. Número de cédula') 
+        # Create a variable that accounts for terrain elevation
+        elevation_list = []
+        distance_list = []
+        for pair in data[u'p9 6. Dirección'] :
+            try:
+                lon1,lat1 = pair
+                lat2,lon2 = '6.0894569','-75.6386876'#'6.2430', '-75.5715'
+                path = str(lat1)+','+str(lon1)+'|'+lat2+','+lon2
+                call_topo = 'https://maps.googleapis.com/maps/api/elevation/json?locations='+path+'&path='+path+'&samples=5&key='+googleKey
+                call_dist = 'https://maps.googleapis.com/maps/api/distancematrix/json?origins='+str(lat1)+','+str(lon1)+'&destinations='+lat2+','+lon2+'&key='+googleKey
+                d_topo = json.loads(requests.get(call_topo).content) 
+                d_dist = json.loads(requests.get(call_dist).content) 
+                if d_dist['status'] == 'OK': 
+                    dist_temp = float(d_dist['rows'][0]['elements'][0]['distance']['value'])
+                    distance_list.append(dist_temp)
+                if d_topo['status'] == 'OK':
+                    ele_dots = [punto['elevation'] for punto in d_topo['results']]
+                    temp_list = array(ele_dots+ele_dots[-1:]) -  array(ele_dots[:1]+ele_dots) 
+                    elevation_list.append(float(100*(abs(temp_list).sum()/4./dist_temp)))
+                    del(dist_temp)
+            except (TypeError, KeyError) as e:
+                elevation_list.append(nan)
+                distance_list.append(nan)
+        data['Pendiente'] = elevation_list
+        data['Distancia'] = distance_list
+        data['Latitude'] = [lat for lon,lat in data[u'p9 6. Direcci\xf3n']]
+        data['Longitude']  = [lon for lon,lat in data[u'p9 6. Direcci\xf3n']]
+        emissions_list = [emissions_mode[unicode(element)] for element in data[u'p68 33. ¿Cuál es su medio habitual (más frecuente y que utiliza por más tiempo en cada viaje) para regresar del trabajo?']]
+        data['Emisiones'] = emissions_list*data.Distancia
+
+        # Create DB file and insert it to Drive                 
+        data.to_csv(filename)
+        update_main_db(data,folder_id)
+        insert_file(title, description, folder_id, filename) 
     
-    # Create a variable that accounts for terrain elevation
-    elevation_list = []
-    distance_list = []
-    for pair in data[u'p9 6. Dirección'] :
-        try:
-            lon1,lat1 = pair
-            lat2,lon2 = '6.2430', '-75.5715'
-            path = str(lat1)+','+str(lon1)+'|'+lat2+','+lon2
-            call_topo = 'https://maps.googleapis.com/maps/api/elevation/json?locations='+path+'&path='+path+'&samples=5&key='+googleKey
-            call_dist = 'https://maps.googleapis.com/maps/api/distancematrix/json?origins='+str(lat1)+','+str(lon1)+'&destinations='+lat2+','+lon2+'&key='+googleKey
-            d_topo = json.loads(requests.get(call_topo).content) 
-            d_dist = json.loads(requests.get(call_dist).content) 
-            if d_dist['status'] == 'OK': 
-                dist_temp = float(d_dist['rows'][0]['elements'][0]['distance']['value'])
-                distance_list.append(dist_temp)
-            if d_topo['status'] == 'OK':
-                ele_dots = [punto['elevation'] for punto in d_topo['results']]
-                temp_list = array(ele_dots+ele_dots[-1:]) -  array(ele_dots[:1]+ele_dots) 
-                elevation_list.append(float(100*(abs(temp_list).sum()/4./dist_temp)))
-                del(dist_temp)
-        except (TypeError, KeyError) as e:
-            elevation_list.append(nan)
-            distance_list.append(nan)
-    data['Pendiente'] = elevation_list
-    data['Distancia'] = distance_list
-    data['Latitude'] = [lat for lon,lat in data[u'p9 6. Direcci\xf3n']]
-    data['Longitude']  = [lon for lon,lat in data[u'p9 6. Direcci\xf3n']]
-    
-    emissions_list = [emissions_mode[unicode(element)] for element in data[u'p68 33. ¿Cuál es su medio habitual (más frecuente y que utiliza por más tiempo en cada viaje) para regresar del trabajo?']]
-    data['Emisiones'] = emissions_list*data.Distancia
-    
-   # Create DB file and insert it to Drive                 
-    data.to_csv(filename)
-    update_main_db(data,folder_id)
-    insert_file(title, description, folder_id, filename) 
-    
-    # Calculate percentage of match and report it on a file.
-    match = 200.0 * len(set(sample_list) & set(data_long[u'p8 2. Número de cédula'])) / (
-            len(sample_list) + len(data_long[u'p8 2. Número de cédula']))
-    with open('Detalles-muestreo.csv', "w") as text_file:
-        text_file.write('Porcentaje de encuesta larga completada: '+str(float(match)))
-        description = 'Detalles sobre el muestreo.'
-    insert_file('Detalles-muestreo', description, folder_id,'Detalles-muestreo.csv')  
-    
-    return data, folder_id        
-else:
-    with open(filename, "w") as text_file:
-        text_file.write('No hay muestra generada para esta empresa')
-    insert_file(title, description, folder_id, filename) 
-    return None
+        # Calculate percentage of match and report it on a file.
+        """
+        match = 200.0 * len(set(sample_list) & set(data_long[u'p8 2. Número de cédula'])) / (
+                len(sample_list) + len(data_long[u'p8 2. Número de cédula']))
+        with open('Detalles-muestreo.csv', "w") as text_file:
+            text_file.write('Porcentaje de encuesta larga completada: '+str(float(match)))
+            description = 'Detalles sobre el muestreo.'
+        insert_file('Detalles-muestreo', description, folder_id,'Detalles-muestreo.csv')  
+        
+        # fill NAs in a decent way!
+        """
+        return data, folder_id        
+    else:
+        with open(filename, "w") as text_file:
+            text_file.write('No hay muestra generada para esta empresa')
+        insert_file(title, description, folder_id, filename) 
+        return None
 

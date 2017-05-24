@@ -14,6 +14,7 @@ from shapely.geometry import Point
 import sys
 import json
 from numpy import nan
+import textwrap
 
 sns.set_style("white")
 sns.set_palette("Oranges")
@@ -37,24 +38,17 @@ def quitar_caracteres_especiales(cols):
 
 def on_draw(event):
     """Auto-wraps all text objects in a figure at draw-time"""
-    
     fig = event.canvas.figure
-
     # Cycle through all arists in all the axes in the figure
     for ax in fig.axes:
         for artist in ax.get_children():
             # If it's a text artist, wrap it...
             if isinstance(artist, mpl.text.Text):
                 autowrap_text(artist, event.renderer)
-
-    # Temporarily disconnect any callbacks to the draw event...
-    # (To avoid recursion)
     func_handles = fig.canvas.callbacks.callbacks[event.name]
     fig.canvas.callbacks.callbacks[event.name] = {}
-    # Re-draw the figure..
-    fig.canvas.draw()
-    # Reset the draw event callbacks
-    fig.canvas.callbacks.callbacks[event.name] = func_handles
+    fig.canvas.draw() # Re-draw the figure..
+    fig.canvas.callbacks.callbacks[event.name] = func_handles # Reset the draw event callbacks
 
 def autowrap_text(textobj, renderer):
     """Wraps the given matplotlib text object so that it exceed the boundaries
@@ -66,13 +60,11 @@ def autowrap_text(textobj, renderer):
     clip = textobj.get_axes().get_window_extent()
     # Set the text to rotate about the left edge (doesn't make sense otherwise)
     textobj.set_rotation_mode('anchor')
-
     # Get the amount of space in the direction of rotation to the left and 
     # right of x0, y0 (left and right are relative to the rotation, as well)
     rotation = textobj.get_rotation()
     right_space = min_dist_inside((x0, y0), rotation, clip)
     left_space = min_dist_inside((x0, y0), rotation - 180, clip)
-
     # Use either the left or right distance depending on the horiz alignment.
     alignment = textobj.get_horizontalalignment()
     if alignment is 'left':
@@ -81,12 +73,10 @@ def autowrap_text(textobj, renderer):
         new_width = left_space
     else:
         new_width = 2 * min(left_space, right_space)
-
     # Estimate the width of the new size in characters...
     aspect_ratio = 0.5 # This varies with the font!! 
     fontsize = textobj.get_size()
     pixels_per_char = aspect_ratio * renderer.points_to_pixels(fontsize)
-
     # If wrap_width is < 1, just make it 1 character
     wrap_width = max(1, new_width // pixels_per_char)
     try:
@@ -122,8 +112,7 @@ def min_dist_inside(point, rotation, box):
 
 
 def vis_answers(df,parent_id,folder_name):
-
-    #   folder_id = insert_folder(parent_id,folder_name)
+    viz_fid = insert_folder(parent_id,folder_name)
     for cols in df.columns:         
         if len(df[cols].dropna()) > 0:
             cols_n = cols
@@ -139,15 +128,15 @@ def vis_answers(df,parent_id,folder_name):
                 """
                 try:
                     fig = plt.figure()
-                    plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
-                    ax = df[cols].dropna().plot(kind='box',color='#ff4500')
-                    quantile = df[cols].quantile(.95)
+                    plt.subplots_adjust(bottom=0.1,top=0.85) # use a lower number to make more vertical space
+                    df[cols].dropna().plot(kind='box',color='#ff4500') #ax=
+                    #quantile = df[cols].quantile(.95)
                     fig.canvas.mpl_connect('draw_event', on_draw)
-                    plt.title(cols)
+                    plt.title('\n'.join(textwrap.wrap(cols,70)))
                     plt.tight_layout()
-                    ax.set_ylim(0, (quantile))
+                    #ax.set_ylim(0, (quantile))
                     plt.savefig('data_viz/'+figure_name)  
-                    #insert_file(figure_name,' ',folder_id, 'data_viz/'+figure_name,mimetype='image/png')        
+                    insert_file(figure_name,' ',viz_fid, 'data_viz/'+figure_name,mimetype='image/png')        
                     plt.close(fig)
                     
                 except TypeError:
@@ -166,34 +155,33 @@ def vis_answers(df,parent_id,folder_name):
                 """
                 try:    
                     fig = plt.figure()
-                    plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
+                    plt.subplots_adjust(bottom=0.1,top=0.85) # use a lower number to make more vertical space
                     #df[cols].value_counts().sort_index().plot(kind='bar')
                     #df[cols].value_counts(dropna=False).plot(kind='bar',color='#ff4500')
                     pd.value_counts(df[cols].replace(u'',nan).values.flatten(),dropna=True).sort_index().plot(kind='bar',color='#ff4500')
                     fig.canvas.mpl_connect('draw_event', on_draw)
                     
-                    plt.title(cols)
+                    plt.title('\n'.join(textwrap.wrap(cols,70)))
                     #plt.tight_layout()
                     plt.savefig('data_viz/'+figure_name)  
-                    #insert_file(figure_name,' ',folder_id, 'data_viz/'+figure_name,mimetype='image/png')                     
+                    insert_file(figure_name,' ',viz_fid, 'data_viz/'+figure_name,mimetype='image/png')                     
                 except (ValueError,TypeError):
                     try:
                         fig = plt.figure()
-                        plt.subplots_adjust(top=0.85) # use a lower number to make more vertical space
+                        plt.subplots_adjust(bottom=0.1,top=0.85) # use a lower number to make more vertical space
                         #df[cols].value_counts().sort_index().plot(kind='bar')
                         #df[cols].value_counts(dropna=False).plot(kind='bar',color='#ff4500')
                         pd.value_counts(df[cols].replace(u'',nan).values.flatten(),dropna=True).sort_index().plot(kind='bar',color='#ff4500')
                         fig.canvas.mpl_connect('draw_event', on_draw)
                         
-                        plt.title(cols)
+                        plt.title('\n'.join(textwrap.wrap(cols,70)))
                         #plt.tight_layout()
                         plt.savefig('data_viz/'+figure_name)  
-                        #insert_file(figure_name,' ',folder_id, 'data_viz/'+figure_name,mimetype='image/png') 
+                        insert_file(figure_name,' ',viz_fid, 'data_viz/'+figure_name,mimetype='image/png') 
                         
                     except (ValueError,TypeError):
                         pass
-    #plot_map(df,folder_id,'')
-    #   return folder_id
+    return viz_fid
 
                 
 def crear_compendios(data,nombre_empresa,folder_id,viz_folder):
